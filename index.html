@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZenType</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & variables ────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:           #141414;
+  --surface:      #1c1c1c;
+  --border:       #242424;
+  --text-dim:     #8a8a8a;       /* pending characters */
+  --text-typed:   #686868;       /* correctly typed */
+  --text-wrong:   #b85c5c;       /* mistyped */
+  --text-ui:      #404040;       /* ui labels */
+  --text-ui-hi:   #666;          /* ui values */
+  --cursor-bg:    #5a7a6a;       /* muted sage */
+  --cursor-fg:    #e8e8e8;
+  --accent:       #5a7a6a;
+  --mono:         'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --sans:         'Inter', system-ui, sans-serif;
+  --line-h:       34px;
+  --font-sz:      15px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text-ui);
+  font-family: var(--sans);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ─── Layout ────────────────────────────────────────────────────────────────── */
+#app {
+  display: grid;
+  grid-template-rows: 48px 1fr 56px;
+  height: 100vh;
+}
+
+/* ─── Top bar ───────────────────────────────────────────────────────────────── */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  border-bottom: 1px solid transparent;
+}
+
+#logo {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: #585858;
+}
+
+#stats {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--mono);
+}
+
+.stat-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #505050;
+}
+
+.stat-val {
+  font-size: 15px;
+  font-weight: 500;
+  color: #606060;
+  min-width: 38px;
+  text-align: right;
+  transition: color 0.3s;
+}
+
+.stat-val.live { color: var(--accent); }
+
+/* ─── Main content ──────────────────────────────────────────────────────────── */
+#main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 32px 64px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Welcome state ── */
+#welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex: 1;
+  gap: 16px;
+  text-align: center;
+}
+
+#welcome-title {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 300;
+  color: #282828;
+  letter-spacing: 0.05em;
+}
+
+#welcome-sub {
+  font-size: 13px;
+  color: #2a2a2a;
+  line-height: 1.9;
+  max-width: 340px;
+}
+
+#drop-hint {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #252525;
+  border: 1px dashed #252525;
+  padding: 14px 28px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+/* ── Typing area ── */
+#typing-area {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  min-height: 0;
+  gap: 16px;
+}
+
+/* The visible window of text — fills available height */
+#text-window {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  cursor: text;
+}
+
+/* Fade top edge so scrolled-off text disappears gracefully */
+#text-window::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 30px;
+  background: linear-gradient(var(--bg), transparent);
+  z-index: 5;
+  pointer-events: none;
+}
+
+#text-scroll {
+  font-family: var(--mono);
+  font-size: var(--font-sz);
+  line-height: var(--line-h);
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 0 32px;
+  transition: transform 0.06s ease;
+  will-change: transform;
+}
+
+/* Character states */
+#text-scroll span { color: var(--text-dim); }
+#text-scroll span.ok   { color: var(--text-typed); }
+#text-scroll span.err  {
+  color: var(--text-wrong);
+  text-decoration: underline;
+  text-decoration-color: #c0392b88;
+  text-underline-offset: 3px;
+}
+#text-scroll span.cur {
+  position: relative;
+  color: var(--text-dim);
+}
+#text-scroll span.cur::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 18%;
+  bottom: 18%;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Progress bar ── */
+#progress-bar {
+  width: 100%;
+  height: 2px;
+  background: #1e1e1e;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+#progress-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.4s ease;
+  opacity: 0.6;
+}
+
+/* ── File label ── */
+#file-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #505050;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  align-self: flex-start;
+}
+
+/* ─── Bottom bar ────────────────────────────────────────────────────────────── */
+#bottombar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-top: 1px solid transparent;
+  padding: 0 32px;
+}
+
+.btn {
+  background: none;
+  border: 1px solid #2e2e2e;
+  color: #5a5a5a;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 6px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.btn:hover {
+  border-color: #333;
+  color: #666;
+}
+
+.btn.accent {
+  border-color: #2a3d35;
+  color: #4a6a5a;
+}
+
+.btn.accent:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.btn[hidden] { display: none; }
+
+/* ─── Drag overlay ──────────────────────────────────────────────────────────── */
+#drag-overlay {
+  display: none;
+  position: fixed;
+  inset: 8px;
+  background: rgba(20, 20, 20, 0.96);
+  border: 1px dashed #2a3d35;
+  border-radius: 8px;
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--mono);
+  color: var(--accent);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+#drag-overlay.show { display: flex; }
+
+/* ─── Result screen ─────────────────────────────────────────────────────────── */
+#result {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+#result.show { display: flex; }
+
+#result-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #2a2a2a;
+}
+
+#result-nums {
+  display: flex;
+  gap: 64px;
+  align-items: flex-end;
+}
+
+.rnum {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.rnum .n {
+  font-family: var(--mono);
+  font-size: 64px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.rnum .n.dim { color: #333; font-size: 48px; }
+
+.rnum .l {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #333;
+}
+
+#result-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ─── Page indicator ────────────────────────────────────────────────────────── */
+.page-ind {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #4a4a4a;
+  padding: 6px 4px;
+  letter-spacing: 0.06em;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* ─── File selector modal (for folder with multiple files) ──────────────────── */
+#file-picker {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20,20,20,0.92);
+  z-index: 150;
+  align-items: center;
+  justify-content: center;
+}
+
+#file-picker.show { display: flex; }
+
+#file-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 480px;
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+#file-list-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#file-list-header button {
+  background: none;
+  border: none;
+  color: #444;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  transition: color 0.15s;
+}
+
+#file-list-header button:hover { color: #888; }
+
+#file-list-items {
+  overflow-y: auto;
+  flex: 1;
+}
+
+#file-list-items::-webkit-scrollbar { width: 4px; }
+#file-list-items::-webkit-scrollbar-track { background: transparent; }
+#file-list-items::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+.file-item {
+  padding: 11px 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #484848;
+  cursor: pointer;
+  border-bottom: 1px solid #1c1c1c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.1s, color 0.1s;
+}
+
+.file-item:hover {
+  background: #1e1e1e;
+  color: #888;
+}
+
+.file-item .char-count {
+  font-size: 10px;
+  color: #2a2a2a;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Top bar -->
+  <header id="topbar">
+    <span id="logo">zentype</span>
+    <div id="stats">
+      <div class="stat">
+        <span class="stat-lbl">wpm</span>
+        <span class="stat-val" id="sv-wpm">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-lbl">acc</span>
+        <span class="stat-val" id="sv-acc">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-lbl">time</span>
+        <span class="stat-val" id="sv-time">—</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main area -->
+  <main id="main">
+
+    <!-- Welcome state -->
+    <div id="welcome">
+      <div id="welcome-title">zentype</div>
+      <div id="welcome-sub">type your obsidian notes.<br>drop a .md file anywhere, or use the buttons below.</div>
+      <div id="drop-hint">drop .md / .txt here</div>
+    </div>
+
+    <!-- Typing area (hidden until file loaded) -->
+    <div id="typing-area">
+      <div id="text-window" onclick="focusInput()">
+        <div id="text-scroll"></div>
+      </div>
+      <div id="progress-bar"><div id="progress-fill"></div></div>
+      <div id="file-label"></div>
+    </div>
+
+  </main>
+
+  <!-- Bottom bar -->
+  <footer id="bottombar">
+    <button class="btn" onclick="handleOpenFile()">open file</button>
+    <button class="btn" onclick="handleOpenFolder()">open folder</button>
+    <button class="btn" id="btn-restart" hidden onclick="restart()">restart</button>
+    <button class="btn" id="btn-prev" hidden onclick="prevPage()">← prev</button>
+    <span class="page-ind" id="page-ind" hidden></span>
+    <button class="btn" id="btn-next-page" hidden onclick="nextPage()">next →</button>
+    <button class="btn accent" id="btn-next-file" hidden onclick="showFilePicker()">next file</button>
+  </footer>
+
+</div>
+
+<!-- Drag overlay -->
+<div id="drag-overlay"><span>↓</span><span>drop to load</span></div>
+
+<!-- Result screen -->
+<div id="result">
+  <div id="result-label">session complete</div>
+  <div id="result-nums">
+    <div class="rnum">
+      <span class="n" id="rn-wpm">0</span>
+      <span class="l">wpm</span>
+    </div>
+    <div class="rnum">
+      <span class="n" id="rn-acc">0</span>
+      <span class="l">accuracy</span>
+    </div>
+    <div class="rnum">
+      <span class="n dim" id="rn-time">0s</span>
+      <span class="l">time</span>
+    </div>
+  </div>
+  <div id="result-actions">
+    <button class="btn accent" onclick="restart()">again</button>
+    <button class="btn accent" id="res-next-page" hidden onclick="nextPage()">next page</button>
+    <button class="btn" onclick="goHome()">home</button>
+    <button class="btn" id="res-next-file" hidden onclick="showFilePicker()">next file</button>
+  </div>
+</div>
+
+<!-- File picker modal -->
+<div id="file-picker">
+  <div id="file-list">
+    <div id="file-list-header">
+      <span id="file-list-count">files</span>
+      <button onclick="closeFilePicker()">✕</button>
+    </div>
+    <div id="file-list-items"></div>
+  </div>
+</div>
+
+<!-- Hidden textarea to capture keyboard input reliably -->
+<textarea id="kb"
+  style="position:fixed;opacity:0;width:1px;height:1px;top:-99px;left:-99px;pointer-events:none"
+  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+></textarea>
+
+<script>
+'use strict';
+// ─── State ───────────────────────────────────────────────────────────────────
+let chars    = [];       // Array of characters to type
+let pos      = 0;        // Current character index
+let errSet   = new Set();// Positions where an error was made
+let startTime= null;     // Date.now() when first key pressed
+let timerTick= null;     // setInterval for live WPM
+let fileText = '';       // Raw text of current page
+let fileName = '';       // Display name
+let fileList = [];       // All files from a folder load
+let fileIdx  = 0;        // Current file index in fileList
+let pages    = [];       // Pages split from full text
+let pageIdx  = 0;        // Current page index
+const LINE_H   = 34;       // Must match --line-h CSS var
+
+// ─── DOM refs ────────────────────────────────────────────────────────────────
+let   spanEls    = [];       // cached span references — avoids O(n) getElementById per keystroke
+const scrollEl   = document.getElementById('text-scroll');
+const windowEl   = document.getElementById('text-window');
+const fillEl     = document.getElementById('progress-fill');
+const wpmEl      = document.getElementById('sv-wpm');
+const accEl      = document.getElementById('sv-acc');
+const timeEl     = document.getElementById('sv-time');
+const kb         = document.getElementById('kb');
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function render() {
+  scrollEl.innerHTML = '';
+  spanEls = [];
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < chars.length; i++) {
+    const s = document.createElement('span');
+    s.textContent = chars[i];
+    frag.appendChild(s);
+    spanEls.push(s);
+  }
+  scrollEl.appendChild(frag);
+  fullRepaint();
+}
+
+// Full repaint — only called on load/restart
+function fullRepaint() {
+  for (let i = 0; i < spanEls.length; i++) {
+    spanEls[i].className = i < pos
+      ? (errSet.has(i) ? 'err' : 'ok')
+      : (i === pos ? 'cur' : '');
+  }
+  scrollToLine();
+  updateProgress();
+}
+
+// Incremental repaint — O(1), only touches the 2 spans that changed
+function repaint(prev) {
+  if (prev !== undefined && prev >= 0 && prev < spanEls.length) {
+    spanEls[prev].className = prev < pos
+      ? (errSet.has(prev) ? 'err' : 'ok')
+      : '';
+  }
+  if (pos < spanEls.length) spanEls[pos].className = 'cur';
+  scrollToLine();
+  updateProgress();
+}
+
+function scrollToLine() {
+  const curEl = spanEls[pos];
+  if (!curEl) { scrollEl.style.transform = 'translateY(0)'; return; }
+  const cursorOffsetTop = curEl.offsetTop;
+  // Keep cursor on line 2 (third visible line) — context above and below
+  const targetY = LINE_H * 2;
+  const translateY = -(cursorOffsetTop - targetY);
+  scrollEl.style.transform = `translateY(${Math.min(0, translateY)}px)`;
+}
+
+function updateProgress() {
+  const pct = chars.length > 0 ? (pos / chars.length) * 100 : 0;
+  fillEl.style.width = pct + '%';
+}
+
+// ─── Live stats ──────────────────────────────────────────────────────────────
+function liveStats() {
+  if (!startTime) return;
+  const secs   = (Date.now() - startTime) / 1000;
+  const mins   = secs / 60;
+  const good   = pos - errSet.size;
+  const wpm    = mins > 0 ? Math.round((good / 5) / mins) : 0;
+  const acc    = pos > 0 ? Math.round((good / pos) * 100) : 100;
+  const timeStr = secs < 60
+    ? Math.round(secs) + 's'
+    : Math.floor(secs / 60) + 'm ' + (Math.round(secs) % 60) + 's';
+
+  wpmEl.textContent = wpm;
+  accEl.textContent = acc + '%';
+  timeEl.textContent = timeStr;
+  wpmEl.classList.toggle('live', wpm > 0);
+  accEl.classList.toggle('live', acc >= 90);
+}
+
+// ─── Keyboard input ──────────────────────────────────────────────────────────
+focusInput();
+window.addEventListener('click', focusInput);
+window.addEventListener('keydown', focusInput);
+
+function focusInput() { kb.focus({ preventScroll: true }); }
+
+kb.addEventListener('keydown', (e) => {
+  if (!chars.length) return;
+  if (document.getElementById('result').classList.contains('show')) return;
+  if (e.ctrlKey || e.metaKey) return;
+
+  if (e.key === 'Escape') { e.preventDefault(); return; }
+
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    const prev = pos;
+    if (pos > 0) pos--;
+    repaint(prev);
+    return;
+  }
+
+  if (e.key.length !== 1) return; // ignore F-keys, arrows, etc.
+  e.preventDefault();
+
+  if (!startTime) {
+    startTime = Date.now();
+    timerTick = setInterval(liveStats, 500);
+  }
+
+  const prev = pos;
+  if (e.key !== chars[pos]) errSet.add(pos);
+  pos++;
+  repaint(prev);
+
+  if (pos >= chars.length) finishSession();
+});
+
+// ─── Pagination ──────────────────────────────────────────────────────────────
+const PAGE_SIZE = 1800; // target chars per page (~15-20 visible lines)
+
+function splitPages(text) {
+  // paragraphs are separated by double-space (from clientStrip)
+  const paras = text.split('  ').filter(p => p.trim().length > 0);
+  const out = [];
+  let cur = '';
+  for (const p of paras) {
+    const next = cur ? cur + '  ' + p : p;
+    if (next.length > PAGE_SIZE && cur) { out.push(cur); cur = p; }
+    else cur = next;
+  }
+  if (cur) out.push(cur);
+  return out.length ? out : [text];
+}
+
+function updatePageNav() {
+  const multi = pages.length > 1;
+  document.getElementById('btn-prev').hidden      = !multi || pageIdx === 0;
+  document.getElementById('btn-next-page').hidden = !multi || pageIdx === pages.length - 1;
+  const ind = document.getElementById('page-ind');
+  ind.hidden = !multi;
+  if (multi) ind.textContent = `${pageIdx + 1} / ${pages.length}`;
+}
+
+function loadPage(idx) {
+  pageIdx = idx;
+  loadText(pages[idx], fileName);
+}
+
+function prevPage() { if (pageIdx > 0) loadPage(pageIdx - 1); }
+function nextPage() { if (pageIdx < pages.length - 1) loadPage(pageIdx + 1); }
+
+// ─── Load text ───────────────────────────────────────────────────────────────
+function loadText(text, name) {
+  fileText = text;
+  fileName = name;
+  chars    = Array.from(text);
+  pos      = 0;
+  errSet.clear();
+  startTime = null;
+  clearInterval(timerTick);
+  timerTick = null;
+
+  // Reset stats display
+  [wpmEl, accEl, timeEl].forEach(el => {
+    el.textContent = '—';
+    el.classList.remove('live');
+  });
+
+  // File label: name + page if multi-page
+  const label = pages.length > 1 ? `${name}  ·  ${pageIdx + 1} / ${pages.length}` : name;
+
+  // Show typing area
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('typing-area').style.display = 'flex';
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('btn-restart').hidden = false;
+  document.getElementById('btn-next-file').hidden = fileList.length <= 1;
+  document.getElementById('res-next-file').hidden = fileList.length <= 1;
+  document.getElementById('file-label').textContent = label;
+  updatePageNav();
+
+  scrollEl.style.transform = 'translateY(0)';
+  render();
+  focusInput();
+}
+
+// ─── Session lifecycle ────────────────────────────────────────────────────────
+function restart() {
+  if (!fileText) return;
+  document.getElementById('result').classList.remove('show');
+  loadPage(pageIdx);
+}
+
+function goHome() {
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('typing-area').style.display = 'none';
+  document.getElementById('welcome').style.display = 'flex';
+  document.getElementById('btn-restart').hidden = true;
+  document.getElementById('btn-prev').hidden = true;
+  document.getElementById('btn-next-page').hidden = true;
+  document.getElementById('page-ind').hidden = true;
+  document.getElementById('btn-next-file').hidden = true;
+  fileText = ''; chars = []; pages = []; pageIdx = 0;
+  clearInterval(timerTick);
+}
+
+function finishSession() {
+  clearInterval(timerTick);
+  const secs = (Date.now() - startTime) / 1000;
+  const mins = secs / 60;
+  const good = pos - errSet.size;
+  const wpm  = Math.round((good / 5) / mins);
+  const acc  = Math.round((good / pos) * 100);
+  const timeStr = secs < 60
+    ? Math.round(secs) + 's'
+    : Math.floor(secs / 60) + 'm ' + (Math.round(secs) % 60) + 's';
+
+  document.getElementById('rn-wpm').textContent  = wpm;
+  document.getElementById('rn-acc').textContent  = acc + '%';
+  document.getElementById('rn-time').textContent = timeStr;
+  document.getElementById('res-next-page').hidden = pageIdx >= pages.length - 1;
+  document.getElementById('result').classList.add('show');
+
+  wpmEl.textContent = wpm;
+  accEl.textContent = acc + '%';
+  timeEl.textContent = timeStr;
+}
+
+// ─── File picker modal ────────────────────────────────────────────────────────
+function showFilePicker() {
+  if (!fileList.length) return;
+  const items = document.getElementById('file-list-items');
+  items.innerHTML = '';
+  document.getElementById('file-list-count').textContent =
+    `${fileList.length} file${fileList.length > 1 ? 's' : ''}`;
+
+  fileList.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<span>${f.name}</span><span class="char-count">${f.text.length} chars</span>`;
+    div.onclick = () => {
+      fileIdx = i;
+      pages = splitPages(f.text);
+      pageIdx = 0;
+      closeFilePicker();
+      loadPage(0);
+    };
+    items.appendChild(div);
+  });
+
+  document.getElementById('file-picker').classList.add('show');
+}
+
+function closeFilePicker() {
+  document.getElementById('file-picker').classList.remove('show');
+  focusInput();
+}
+
+// ─── Section picker modal ─────────────────────────────────────────────────────
+function showSectionPicker() {
+  if (!sectionList.length) return;
+  const items = document.getElementById('section-list-items');
+  items.innerHTML = '';
+  document.getElementById('section-list-count').textContent =
+    `${sectionList.length} section${sectionList.length > 1 ? 's' : ''}`;
+
+  sectionList.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'section-item' + (i === sectionIdx ? ' active' : '');
+    div.innerHTML = `<span>${s.title}</span><span class="char-count">${s.text.length} chars</span>`;
+    div.onclick = () => { sectionIdx = i; closeSectionPicker(); loadSection(i); };
+    items.appendChild(div);
+  });
+
+  document.getElementById('section-picker').classList.add('show');
+}
+
+function closeSectionPicker() {
+  document.getElementById('section-picker').classList.remove('show');
+  focusInput();
+}
+
+function loadSection(idx) {
+  const s = sectionList[idx];
+  if (!s) return;
+  sectionIdx = idx;
+  const label = parentName ? `${parentName}  ·  ${s.title}` : s.title;
+  loadText(s.text, s.title, label);
+}
+
+// ─── File loading (pywebview API) ─────────────────────────────────────────────
+async function handleOpenFile() {
+  try {
+    const api = window.pywebview?.api;
+    if (api) {
+      const files = await api.open_file();
+      if (files?.length) {
+        fileList = files;
+        fileIdx = 0;
+        if (files.length === 1) {
+          pages = splitPages(files[0].text); pageIdx = 0; loadPage(0);
+        } else {
+          pages = []; pageIdx = 0; showFilePicker();
+        }
+      }
+    } else {
+      // Fallback: browser file input
+      browserPickFile();
+    }
+  } catch (e) {
+    console.error('open_file:', e);
+    browserPickFile();
+  }
+}
+
+async function handleOpenFolder() {
+  try {
+    const api = window.pywebview?.api;
+    if (api) {
+      const files = await api.open_folder();
+      if (files?.length) {
+        fileList = files;
+        fileIdx = 0;
+        if (files.length === 1) {
+          pages = splitPages(files[0].text); pageIdx = 0; loadPage(0);
+        } else {
+          pages = []; pageIdx = 0; showFilePicker();
+        }
+      }
+    } else {
+      alert('Folder selection requires the desktop app (pywebview). Use "open file" to drag individual files.');
+    }
+  } catch (e) {
+    console.error('open_folder:', e);
+  }
+}
+
+// Browser fallback file picker (when running without pywebview)
+function browserPickFile() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.md,.txt';
+  inp.multiple = true;
+  inp.onchange = async () => {
+    const results = [];
+    for (const f of inp.files) {
+      const raw  = await f.text();
+      const name = f.name.replace(/\.(md|txt)$/i, '');
+      results.push({ name, text: clientStrip(raw) });
+    }
+    fileList = results.filter(f => f.text.length >= 50);
+    if (fileList.length === 1) {
+      pages = splitPages(fileList[0].text);
+      pageIdx = 0;
+      loadPage(0);
+    } else if (fileList.length > 1) {
+      pages = []; pageIdx = 0;
+      showFilePicker();
+    }
+  };
+  inp.click();
+}
+
+// ─── Drag & drop ─────────────────────────────────────────────────────────────
+let dragCount = 0;
+const overlay = document.getElementById('drag-overlay');
+
+document.addEventListener('dragenter', (e) => { e.preventDefault(); dragCount++; overlay.classList.add('show'); });
+document.addEventListener('dragleave', (e) => { if (--dragCount <= 0) { dragCount = 0; overlay.classList.remove('show'); } });
+document.addEventListener('dragover',  (e) => { e.preventDefault(); });
+
+document.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  dragCount = 0;
+  overlay.classList.remove('show');
+  const dropped = [];
+  for (const f of e.dataTransfer.files) {
+    if (/\.(md|txt)$/i.test(f.name)) {
+      const raw   = await f.text();
+      const clean = clientStrip(raw);
+      if (clean.length >= 50)
+        dropped.push({ name: f.name.replace(/\.(md|txt)$/i, ''), text: clean });
+    }
+  }
+  if (!dropped.length) return;
+  fileList = dropped;
+  fileIdx  = 0;
+  if (dropped.length === 1) {
+    pages = splitPages(dropped[0].text);
+    pageIdx = 0;
+    loadPage(0);
+  } else {
+    pages = []; pageIdx = 0;
+    showFilePicker();
+  }
+});
+
+// ─── Client-side markdown strip (fallback when no Python) ─────────────────────
+function clientStrip(txt) {
+  txt = txt.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, '');
+  txt = txt.replace(/!\[\[.*?\]\]/g, '');
+  txt = txt.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, a, b) => b || a);
+  txt = txt.replace(/!\[.*?\]\(.*?\)/g, '');
+  txt = txt.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+  txt = txt.replace(/^#{1,6}\s+/gm, '');
+  txt = txt.replace(/\*{1,3}([^*\n]+)\*{1,3}/g, '$1');
+  txt = txt.replace(/_{1,3}([^_\n]+)_{1,3}/g, '$1');
+  txt = txt.replace(/~~([^~]+)~~/g, '$1');
+  txt = txt.replace(/```[\w]*\n([\s\S]*?)```/g, '$1');
+  txt = txt.replace(/`([^`]+)`/g, '$1');
+  txt = txt.replace(/^>\s*\[!\w+\][-+]?\s*/gm, '');
+  txt = txt.replace(/^>\s*/gm, '');
+  txt = txt.replace(/^[-*+]\s+/gm, '');
+  txt = txt.replace(/^\d+[.)]\s+/gm, '');
+  txt = txt.replace(/(?<!\w)#[\w/]+/g, '');
+  txt = txt.replace(/<[^>]+>/g, '');
+  txt = txt.replace(/[ \t]+/g, ' ');
+  txt = txt.replace(/\n\n+/g, '  ');
+  txt = txt.replace(/\n/g, ' ');
+  txt = txt.replace(/ {2,}/g, '  ');
+  return txt.trim();
+}
+
+// Close file picker on escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeFilePicker();
+    document.getElementById('result').classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>
