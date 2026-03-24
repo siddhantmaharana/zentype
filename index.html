@@ -97,8 +97,8 @@ html, body {
 #main {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  padding: 32px 64px;
+  align-items: center;
+  padding: 24px 0 16px;
   position: relative;
   overflow: hidden;
 }
@@ -146,11 +146,10 @@ html, body {
   display: none;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 100%;
+  width: min(860px, 100% - 120px);
   flex: 1;
   min-height: 0;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* The visible window of text — fills available height */
@@ -163,16 +162,6 @@ html, body {
   cursor: text;
 }
 
-/* Fade top edge so scrolled-off text disappears gracefully */
-#text-window::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 30px;
-  background: linear-gradient(var(--bg), transparent);
-  z-index: 5;
-  pointer-events: none;
-}
 
 #text-scroll {
   font-family: var(--mono);
@@ -180,7 +169,6 @@ html, body {
   line-height: var(--line-h);
   white-space: pre-wrap;
   word-break: break-word;
-  padding: 0 32px;
   transition: transform 0.06s ease;
   will-change: transform;
 }
@@ -569,6 +557,7 @@ let fileList = [];       // All files from a folder load
 let fileIdx  = 0;        // Current file index in fileList
 let pages    = [];       // Pages split from full text
 let pageIdx  = 0;        // Current page index
+let scrollY  = 0;        // Current scroll offset in px
 const LINE_H   = 34;       // Must match --line-h CSS var
 
 // ─── DOM refs ────────────────────────────────────────────────────────────────
@@ -621,17 +610,33 @@ function repaint(prev) {
 
 function scrollToLine() {
   const curEl = spanEls[pos];
-  if (!curEl) { scrollEl.style.transform = 'translateY(0)'; return; }
-  const cursorOffsetTop = curEl.offsetTop;
-  // Keep cursor on line 2 (third visible line) — context above and below
-  const targetY = LINE_H * 2;
-  const translateY = -(cursorOffsetTop - targetY);
-  scrollEl.style.transform = `translateY(${Math.min(0, translateY)}px)`;
+  if (!curEl) { scrollY = 0; scrollEl.style.transform = 'translateY(0)'; return; }
+  const cursorTop    = curEl.offsetTop;
+  const windowH      = windowEl.offsetHeight;
+  const visibleBot   = scrollY + windowH;
+
+  if (cursorTop < scrollY + LINE_H) {
+    // cursor scrolled above visible area — scroll up
+    scrollY = Math.max(0, cursorTop - LINE_H);
+  } else if (cursorTop + LINE_H * 2 > visibleBot) {
+    // cursor near bottom edge — scroll down just enough
+    scrollY = Math.max(0, cursorTop + LINE_H * 2 - windowH);
+  }
+  scrollEl.style.transform = `translateY(${-scrollY}px)`;
 }
 
 function updateProgress() {
   const pct = chars.length > 0 ? (pos / chars.length) * 100 : 0;
   fillEl.style.width = pct + '%';
+}
+
+// Skip past newline characters — they render visually but aren't typed
+function skipNewlines() {
+  while (pos < chars.length && chars[pos] === '\n') pos++;
+}
+
+function skipNewlinesBack() {
+  while (pos > 0 && chars[pos] === '\n') pos--;
 }
 
 // ─── Live stats ──────────────────────────────────────────────────────────────
@@ -670,7 +675,7 @@ kb.addEventListener('keydown', (e) => {
   if (e.key === 'Backspace') {
     e.preventDefault();
     const prev = pos;
-    if (pos > 0) pos--;
+    if (pos > 0) { pos--; skipNewlinesBack(); }
     repaint(prev);
     return;
   }
@@ -686,6 +691,7 @@ kb.addEventListener('keydown', (e) => {
   const prev = pos;
   if (e.key !== chars[pos]) errSet.add(pos);
   pos++;
+  skipNewlines();
   repaint(prev);
 
   if (pos >= chars.length) finishSession();
@@ -695,12 +701,11 @@ kb.addEventListener('keydown', (e) => {
 const PAGE_SIZE = 1800; // target chars per page (~15-20 visible lines)
 
 function splitPages(text) {
-  // paragraphs are separated by double-space (from clientStrip)
-  const paras = text.split('  ').filter(p => p.trim().length > 0);
+  const paras = text.split(/\n\n+/).filter(p => p.trim().length > 0);
   const out = [];
   let cur = '';
   for (const p of paras) {
-    const next = cur ? cur + '  ' + p : p;
+    const next = cur ? cur + '\n\n' + p : p;
     if (next.length > PAGE_SIZE && cur) { out.push(cur); cur = p; }
     else cur = next;
   }
@@ -755,6 +760,8 @@ function loadText(text, name) {
   document.getElementById('file-label').textContent = label;
   updatePageNav();
 
+  skipNewlines();
+  scrollY = 0;
   scrollEl.style.transform = 'translateY(0)';
   render();
   focusInput();
@@ -990,10 +997,9 @@ function clientStrip(txt) {
   txt = txt.replace(/^\d+[.)]\s+/gm, '');
   txt = txt.replace(/(?<!\w)#[\w/]+/g, '');
   txt = txt.replace(/<[^>]+>/g, '');
-  txt = txt.replace(/[ \t]+/g, ' ');
-  txt = txt.replace(/\n\n+/g, '  ');
-  txt = txt.replace(/\n/g, ' ');
-  txt = txt.replace(/ {2,}/g, '  ');
+  txt = txt.replace(/[ \t]+/g, ' ');       // collapse spaces/tabs within a line
+  txt = txt.replace(/^ | $/gm, '');        // trim leading/trailing space per line
+  txt = txt.replace(/\n{3,}/g, '\n\n');    // max one blank line between paragraphs
   return txt.trim();
 }
 

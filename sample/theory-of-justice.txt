@@ -1,0 +1,271 @@
+1-Page Summary
+
+In A Theory of Justice, 20th-century American political philosopher John Rawls explores the best and most just way a society can distribute social goods like rights, opportunities, wealth, and power. He argues that people can and should determine the distribution of these goods entirely through reason and logic, rather than by appeals to one’s identity—sex, race, religion, and so on. This idea is the underpinning of Rawls’s theory of “justice as fairness,” which allows for basic human rights, some degree of social and economic equality, and a safety net for more vulnerable members of society. Released in 1971, A Theory of Justice is a popular and influential modern defense of liberalism that continues to be cited, discussed, and debated by philosophers and politicians alike.
+
+We’ll explore Rawls’s theory of justice as fairness in four parts:
+
+Part 1: What Justice Is and Is Not explains the question Rawls tries to answer as well as his critiques of other theories of justice.
+Part 2: The Theory of Justice as Fairness goes through the main principles of Rawls’s theory and how he arrives at them.
+Part 3: Justice as Fairness in Society expands on how Rawls’s theory creates a just society.
+Part 4: Living Under Justice as Fairness describes the obligations citizens have to society under justice as fairness.
+
+Rawls’s Ideological Roots
+
+In A Theory of Justice, Rawls offers a defense of liberalism—an ideology that began in 17th-century England with philosophers like Thomas Hobbes and John Locke, and later expanded to include thinkers across Europe and its colonies. While liberalism is a broad category of ideas, three main ideas come up repeatedly:
+
+Society is made up of rational individuals, rather than intermingling groups and communities.
+
+Government exists for the benefit of the people and must guarantee certain rights and liberties that all rational individuals deserve.
+
+In particular, the government must guarantee an individual’s right to own property and capital.
+
+As you read our guide, consider how Rawls defends these three core principles of liberalism and how he tries to make them compatible with guarantees of general societal well-being.
+
+Part 1: What Justice Is and Is Not
+
+Before we discuss the specific principles of Rawls’s theory of justice, we first have to understand how he defines justice—as well as his critique of the other dominant theory of justice at the time: utilitarianism. By outlining what Rawls means when he refers to “justice” or “a just society,” we can fully understand the scope of Rawls’s theory and how his philosophy applies to real political circumstances.
+
+In Part 1 of our guide, we’ll explain the following:
+
+Rawls’s definition of justice
+Rawls’s critique of utilitarianism
+Rawls’s Definition of Justice
+
+Rawls defines justice as the dominant ideology or goal underlying the rules of society—in other words, why people create and follow a society’s rules. Under this definition, justice is a generally held idea of the best and most moral way of organizing society. Rawls says there’s no universal sense of justice that all societies agree on; different societies have different theories of what’s just and unjust. Members of each society try to make specific political and economic rules that are just—according to their own theory of justice.
+
+These rules then determine how that society distributes “primary benefits”: things that help people achieve their goals in life no matter what they might be. Rawls says the main primary benefits are rights, liberties, opportunities, wealth or income, and a sense of self-worth (not being treated as inferior by society).
+
+(Shortform note: One consequence of Rawls’s definition of justice is that he doesn’t concern himself with justice on an individual level—in a specific court case or moral dilemma, for example. This separates Rawls from many other theorists of justice, who view social justice as an extension of individual justice following the same principles. For example, 18th-century Prussian philosopher Immanuel Kant uses the principles of the categorical imperative (a pair of universal moral laws) not only to judge what’s just for an individual, but also what’s just for a nation—both on a domestic and international scale.)
+
+Here’s an example of how a principle of justice informs a rule, which in turn informs the distribution of a primary benefit:
+
+Rawls’s Critique of Utilitarianism
+
+After defining justice, Rawls then focuses on theories of justice—in other words, the specific ideologies and goals that people believe are best for society. Before outlining his own theory of justice, Rawls critiques what he characterizes as the dominant theory of justice at the time: utilitarianism.
+
+A utilitarian theory of justice believes society should aim to provide the most social benefits or “utility” possible to the most people possible. Utilitarians quantify social benefits (rights, wealth, liberties, and so on) in terms of the pain or pleasure they provide. They then argue that society’s rules for distribution should maximize pleasure and minimize pain for the largest number of people possible. For example, a utilitarian argument for speed-limit laws suggests the social benefits they give people (greater safety for all drivers, minimizing the pain of potential car accidents) outweigh the social benefits they take away from people (the pleasure certain individuals gain from being free to drive as fast as they want) and are therefore just.
+
+Rawls argues that utilitarian theories of justice are flawed because they allow for a majority of people to oppress a minority—when social benefits, such as greater wealth or opportunities, provided to the majority outweigh the social benefits that the minority are deprived of, such as liberty, rights, and wealth. For example, if a utilitarian could prove that chattel slavery pleasured the enslavers more than it harmed the enslaved, then they would say that institution was just.
+
+Rawls believes this kind of oppression is inherently immoral and that utilitarianism fails to acknowledge this. Even utilitarian theories that allow for equal rights and liberties only do so because they believe that equal rights create the most benefits possible—and not because they believe people have an inherent right to avoid oppression or that oppression is inherently wrong.
+
+(Shortform note: Some utilitarian scholars argue that under utilitarianism, oppression is never just. This argument rests on the idea that some essential pleasures like safety, food, and shelter should be given far more weight than non-essential pleasures. Using this moral calculus, something like slavery is automatically unjust because it deprives slaves of essential pleasures like safety and well-being for the sake of providing non-essential pleasures to slave owners like extra wealth or leisure time.)
+
+Utilitarianism in Academia
+
+Rawls presents utilitarianism as the dominant theory of justice in the 20th century and therefore as the greatest challenger to justice as fairness. However, some scholars argue that when Rawls was writing, many philosophers had already turned away from classic utilitarianism. Instead, these philosophers turned to “consequentialism,” a less radical version of utilitarian thinking that places less emphasis on logically measuring pleasure and pain to determine what is moral and just.
+
+While Rawls’s critique of utilitarianism may seem out of place, it serves as a launching pad for his broader project: trying to create a theory of justice that ensures a baseline level of well-being for everyone and rejects oppression as inherently immoral.)
+
+Part 2: The Theory of Justice as Fairness
+
+After explaining what justice is and critiquing utilitarian theories of justice, Rawls then considers how to create an ideal theory of justice. “Ideal” in this case doesn’t refer to rules that can create a perfect government or utopian society. Instead, Rawls says an ideal theory of justice is one that a group of equals could rationally agree is best, regardless of their own personal backgrounds or circumstances.
+
+The Original Position
+
+To determine the ideal principles of justice, Rawls uses a thought experiment he calls “the original position”: a hypothetical situation where a group of equals must create a rational definition of justice. The members of this group act as representatives of real citizens in a society at a one-to-one ratio—each citizen has their own representative. The representatives are all equally clearheaded and competent, they all have an equal say, and they all have to agree on a definition of justice before it’s finalized. In addition, they must arrive at this definition entirely through rational debate—they can’t use any threats of violence, appeals to emotion, or attempts to persuade each other through rhetoric alone.
+
+The History of the Original Position
+
+The original position is Rawls’s take on “social contract theory”: the idea that societies exist and function based on widespread consent. Classic social contract theories like that of 18th-century French philosopher Jean-Jacques Rousseau suggest societies came into existence based on a general agreement. According to this agreement, people respect the rules and laws of a society in exchange for a safer, easier life. The continued existence of society is based on this contract—if society fails to provide the benefits promised in the social contract, then people are no longer required to follow its laws and can create a new society.
+
+The term “original position” refers to this process of creating a society via contract negotiation. “Original” refers to the fact that it occurs before any other negotiations about society, and “position” refers to the situation the negotiators find themselves in.
+
+The Original Position Framework
+
+Rawls outlines the three main circumstances that every representative is aware of in the original position:
+
+1) In this hypothetical society, there’s a medium level of scarcity. This means that there are enough primary benefits to meet everyone’s basic needs, but there aren’t enough primary benefits for everyone to get everything they want.
+
+2) Each representative wants to ensure that their citizen receives enough primary benefits to live a fulfilling life.
+
+3) Whatever definition of justice the representatives come up with has to be fair to all citizens. This is because all representatives are rational and on equal footing—nobody will arbitrarily agree to a definition that gives their citizen fewer benefits than everyone else, and nobody can coerce a representative into accepting a definition that gives their citizen fewer benefits than everyone else.
+
+(Shortform note: The framework of the original position serves as Rawls’s version of the “state of nature,” or the condition of people living outside of organized society. Classic social contract theorists saw the state of nature as essential for understanding how people organize into societies—after all, it determines the circumstances of the negotiators. Then, based on their view of the state of nature, different social contract theorists came to different conclusions of how people would negotiate. In A Theory of Justice, Rawls’s original position determines the position of the representatives, but it’s not a claim of how he believes people actually live outside of society. Instead, it’s an idealized “state of nature” where people can negotiate freely and fairly.)
+
+The Veil of Ignorance
+
+While the representatives understand the above circumstances, Rawls also explains that there are some things that they don’t know—a lack of knowledge that he calls the “veil of ignorance.” Under the veil of ignorance, the representatives don’t know the specific life circumstances of those they represent—things like race, sex, gender, age, wealth, natural talents, and religious beliefs. Because the representatives don’t know these circumstances, they’ll only argue for a definition of justice that benefits a general citizen, rather than a citizen with specific traits or qualities.
+
+For example, a representative speaks on behalf of Jolene, a wealthy Buddhist woman.
+
+Without the veil of ignorance, the representative knows these things about Jolene and would argue for a definition of justice that benefits the wealthy, or for the Buddhist definition of justice.
+With the veil of ignorance, however, the representative simply knows they speak on behalf of “Citizen J.” Therefore, they won’t argue for a definition of justice that favors the wealthy or Buddhists—for all they know, Citizen J could be a poor Protestant, a middle-class Muslim, or anything else.
+
+(Shortform note: The veil of ignorance allows Rawls to incorporate a common liberal ideal—that people should ignore their personal background and biases in favor of detached rational debate—into his thought experiment. Many critics of Rawls have attacked the veil of ignorance, though, arguing that personhood is defined by our backgrounds, communities, and experiences, and that you can’t separate these things from conceptions of reason and rational debate the original position relies on. In his later work Political Liberalism, Rawls says these objections miss his point because they focus on the metaphysical question of what it means to be a person rather than the political question of how self-interested, competent individuals might negotiate fairly.)
+
+The Original Position Negotiation
+
+Rawls then explains how a group of representatives might negotiate in the original position. He acknowledges that while not every group will follow the exact process he outlines here, they’d still arrive at many of the same conclusions. In addition, Rawls notes that in this process, groups of representatives wouldn’t tend toward utilitarian theories of justice—nobody would risk giving up their individual rights and freedoms to benefit others even if doing so led to the most utility collectively.
+
+The process of negotiating in the original position consists of three steps:
+
+Step #1: Complete Equality
+
+As previously discussed, nobody will arbitrarily accept fewer primary benefits, nor will they accept others arbitrarily getting more primary benefits than they do. Therefore, the group will initially agree that everyone should get equal amounts of primary benefits. We’ll call this a state of “complete equality.”
+
+Step #2: The Benefits of Inequality
+
+However, according to Rawls, there are some instances where inequalities of wealth and power can actually leave everyone with more primary benefits than they’d have in a state of complete equality. These inequalities can improve efficiency and leave everyone with more than they would have had otherwise.
+
+For example, a group is building a dam that will provide benefits to everyone—flood protection, water, hydroelectricity, and so on. In a state of complete equality, nobody has the authority to give orders or the resources to fully fund the project. But with some inequality of wealth and power, the group could have a leader to organize the project and a wealthy individual to provide the funding for it. In this case, some inequality would help the group build the dam much more efficiently (or at all) so everyone could benefit from it.
+
+Therefore, in the original position, people can accept inequalities of wealth and power (but not of basic rights and liberties) as long as these inequalities benefit everyone and are administered fairly.
+
+Step #3: Administering Inequality Fairly
+
+To ensure that these inequalities are administered fairly, the group would attach them to positions or roles in society, then add the condition that everyone has an equal opportunity to fill these roles—this ensures that people with additional power and wealth are accountable to society as a whole and that those rules aren’t arbitrarily limited to some people over others.
+
+According to Rawls, the group would also add the condition that unequal distributions of wealth or power should provide the greatest possible benefit to those with the least. Even when inequalities leave everyone better off than they were before, they’ll still inevitably leave some people with less wealth and power than everybody else. This second condition prevents distributions where those with the most benefit at the expense of those with the least. Representatives don’t know whether or not they’re advocating for someone with very little, so they’d want to ensure these benefits for the least fortunate just in case.
+
+For example: In a state of complete equality, everyone has $25,000. The society decides to build the dam mentioned above and has to choose among three unequal distributions:
+
+Because of their salaries, dam managers now have $100,000 and dam workers now have $75,000. Because of cheaper water and power, everyone else now has $35,000.
+Society invests more in the dam to make it better. Dam managers now have $200,000 and dam workers now have $100,000. Water and power are even cheaper, so everyone else has $50,000.
+Society invests even more in the dam. Dam managers now have $250,000, dam workers now have $150,000, and everyone else has $30,000 due to high dam taxes.
+
+While everyone is better off with the dam than they are without it, according to Rawls, the second scenario is the most just unequal distribution because it provides the greatest possible benefit to those with the least.
+
+Capitalism Under Justice as Fairness
+
+From its very beginnings, liberalism has been closely tied to capitalism, or private ownership of industries for individual profit. Early liberals like John Locke viewed the right to own private property as a fundamental human right, arguing that a just government could not and should not interfere with it. In addition, liberals like 18th-century Scottish philosopher Adam Smith argued that people acted as rational, self-interested individuals in a capitalist free market, an idea that liberals also apply to the political realm. Rawls himself uses the ideal of the rational, self-interested individual in his construction of the original position as seen above.
+
+In this section, Rawls justifies his own version of capitalism—he claims that inequalities of wealth (private ownership) allow a state to function more efficiently than in a state of complete equality. However, Rawls argues for a far more limited conception of capitalism, one regulated by the state to try and ensure fairness and general well-being. This is a middle ground between right-wing classic liberalism and its critics on the left: Classic liberals like Smith believe government interference in the market disrupts the generation of wealth in society and therefore disrupts general well-being, while leftist critics of liberalism like Karl Marx argue that capitalism is built on exploitation and therefore cannot work for the common good in the way Rawls wants it to.
+
+The Conclusion of The Original Position
+
+The result of the negotiations above is the theory of justice Rawls calls “justice as fairness.”
+
+Justice as fairness has two principles:
+
+All citizens have equal fundamental rights that nobody can take away.
+Citizens can have unequal amounts of wealth and power only under the following circumstances:
+These unequal distributions benefit everyone in society and most benefit those with the least amount of wealth and power.
+Everyone has an equal opportunity to obtain wealth and power.
+
+A Theory of Secular Christianity?
+
+Many scholars have noted the connections between Rawls’s philosophical theories and his Christian religious beliefs, and they suggest that justice as fairness is his attempt to justify the Christian conception of equality and charity with secular logic instead of faith. Rawls was a religious man and even considered becoming a priest in his youth. However, his faith was shaken during his service in World War II, where he saw much of the horror and destruction that people are capable of. Some scholars see justice as fairness as Rawls’s attempt to argue that whether or not human equality and kindness come from God, everyone should work toward them on this earth.
+
+Most notably, Rawls’s principles of justice as fairness seem like a secular interpretation of Matthew 25:40, when God says, “Inasmuch as you have done it to one of the least of these my brothers, you have done it to me.” In other words, anything you do to those with the least, you also do to God himself—which naturally would lead one to conclude that a moral and just society must take care of everyone, especially those with the least. Rawls’s two principles try to guarantee that happens, while the original position allows him to justify his moral claim by appealing to reason instead of scripture.
+
+Part 3: Justice as Fairness in Society
+
+After discussing how he arrives at the two principles of justice as fairness, Rawls then goes into more detail on what these principles mean for society—discussing how each principle might influence the rules and distribution systems of society. Specifically, Rawls outlines the following:
+
+Principle #1: Everyone in society should have basic equal rights, liberties, and duties.
+Principle #2: Unequal distributions of wealth and power are just under certain circumstances.
+Principle #1: Everyone Should Have Equal Rights, Liberties, and Duties
+
+Rawls’s first principle states that everyone in society should have basic equal rights, liberties, and duties. As previously discussed, this principle derives naturally from the original position, since everyone involved would want to guarantee they weren’t oppressed. To further explore this first principle, we’ll examine Rawls’s definition of rights and liberties as well as how he says social institutions can resolve conflicts between different rights and liberties.
+
+Defining Rights and Liberties
+
+Rawls frames rights, liberties, and duties in terms of limits on actions: what people are (or are not) allowed or able to do. He doesn’t define every single right, liberty, and duty that he believes is just, suggesting instead that this is the job of social institutions. However, he does note several important examples: freedom of religion, freedom of speech, the right to equal political participation, and property rights. In addition, Rawls’s conception of political equality extends beyond detached formal rules to include the equal right to exercise political power (by holding office or voting in an election, for example). This right ensures that people who already have some degree of wealth and power don’t get a greater say in political decisions.
+
+For example, a formal rule ensures that each citizen has one vote in an election. However, this doesn’t guarantee equality by itself—Prudence, who is wealthy, can spend far more money than the average citizen to organize people around her political platform and campaign for votes. In this situation, Prudence would, in practice, be able to exercise more political power than most. Therefore, Rawls believes the state must place limits on the role of wealth in political organization or provide resources to those with less so they too can organize around issues.
+
+Liberalism and Money in Politics
+
+The role of money in politics in liberal societies (like the one Rawls is proposing) is a hotly contested issue, with many different ideas of how or to what degree the government should control the political influence of private wealth. Here are a number of political perspectives on this issue ranging from right to left:
+
+Right-wing perspective: Conservatives and libertarians believe that using private wealth to lobby politicians or organize political campaigns is perfectly acceptable and a form of free speech. Therefore, they argue the government shouldn’t restrict the role of private wealth in politics and should work to protect the right of private individuals and corporations to spend as much money on politics as they so choose.
+
+Centrist perspective: Center-right and center-left politicians tend to argue that while private money has a place in politics, regulations should be in place to combat corruption (blatantly trading money for political favors) and prevent private individuals from gaining too much influence over government. They work toward moderate restrictions and regulations on the use of private money in politics—things like transparency in campaign financing, maximum limits on individual donations, and public funding for less well-off political campaigns. Rawls seems to fall into this category.
+
+Left-wing perspective: Progressives and democratic socialists argue that money translates to political power. Therefore, for everyone to have an equal say in politics, the government has to play a strong role in limiting or eliminating wealth inequality. Many argue for the same regulations as centrists, but they believe these regulations have to exist alongside broader wealth-equality proposals like higher taxes on the rich or stronger labor power.
+
+Rights, Liberties, and Conflicts
+
+Sometimes, different rights and liberties will contradict each other, acknowledges Rawls—for example, if someone randomly threatens to kill a stranger on the street, the threatener’s right to free speech conflicts with the stranger’s right to personal safety. To address this conflict, Rawls says representatives in the original position would attach two additional rules to the first principle:
+
+1) A society can restrict certain liberties but only if doing so creates greater liberty for everyone. For example, privacy laws restrict an individual’s liberty to spy on their neighbors, but these laws create a broader right to privacy for everyone in society. In addition, Rawls suggests that this rule makes it unjust for a majority in society to oppress a minority. While that may limit the right of the majority to freely exercise political power, it preserves many more crucial rights and freedoms of the minority.
+
+Rawls acknowledges that in a real society, social and historical circumstances interfere with perfect equality—for example, a historically oppressed group might still struggle to obtain true equality even in a society that believes everyone should have equal rights. Or, a violent political faction might have fewer rights to express their views for the sake of public order. In these cases, Rawls suggests it’s the duty of society to continuously work toward the greatest overall liberty—addressing the largest injustices first and making decisions based on what makes everyone as equal and free as possible.
+
+(Shortform note: To understand what Rawls means by “greater” or “lesser” liberty, we can look to the definition of liberty he uses—specifically, the “triadic relation” definition of liberty created by 20th-century American legal philosopher Gerald C. McCallum, Jr. Under this definition, liberty consists of three components: a subject, limiting conditions, and certain actions or goals. Any statement of liberty, or lack thereof, then involves these three components. For example: John (a subject) is prevented by the law (a limiting condition) from robbing his neighbor (an action). This means that we can understand “greater” liberty as the ability to do a greater number of important things rather than as an abstract state of being.)
+
+2) Some people can have less liberty than others if they consent to it. There are circumstances where people need others to act on their behalf. In this case, it’s just for an individual to entrust some of their liberty in a guardian—so long as the guardian rationally considers what the individual would want if they could act for themselves. For example, a coma patient needs (and presumably wants) someone to act on their behalf. Therefore, it's just for someone they trust, like a doctor or family member, to temporarily act on their behalf, making decisions based on what they think the coma patient would want.
+
+(Shortform note: Rawls suggests people use reason to act on behalf of others. However, such situations and disagreements that might emerge often depend far more on emotion than they do on reason. For example, in 1998, Terri Schiavo became the center of a complicated legal battle. Schiavo was in a persistent vegetative state with little chance of recovery after suffering cardiac arrest, and while her husband believed she should be taken off of her feeding tube, ending her life, her parents wanted to keep her on life support. Their conflict led to a seven-year legal battle, showing that acting on behalf of someone else can be difficult to resolve or even debate through reason alone.)
+
+Principle #2: Some Inequality Is Just Under Certain Circumstances
+
+Rawls’s second principle argues that inequalities of wealth and political power are just under certain circumstances. We discussed two of these circumstances in Part 2:
+
+Unequal distributions of wealth and power must benefit everyone and must provide the greatest possible benefit to those with the least wealth and power.
+These inequalities come from jobs in society that everyone has equal opportunities to fill. They include public positions, like government bureaucrats, as well as private positions—everything from CEOs to dentists.
+
+Rawls adds three rules to clarify his second principle:
+
+Rule #1: Rights Have Priority Over Inequality
+
+According to rule #1, unequal distributions of power and wealth aren’t just if they infringe upon people’s basic rights and freedoms. Rawls says that if there’s ever a time when universal rights and unequal wealth or power conflict, then society must prioritize rights. For example, an excellent leader has provided society with incredible benefits—so much so that many people want to make their leader an absolute dictator for life. While this increased inequality of power might provide society with the benefits of a skilled leader, it’s unjust because it would deprive everyone of their basic right to exercise political power.
+
+(Shortform note: One of the common questions posed when balancing unequal power with basic rights is how to manage a nation’s security in times of crisis. Many classic liberal philosophers (like Rousseau, for example) believed protecting a nation took priority above all else—even basic rights. Rousseau suggests a system similar to that of the Roman Republic, where a political leader can temporarily become a dictator with absolute power during times of war or intense instability. Critics of such a measure argue that its potential for abuse makes it far too dangerous.)
+
+Rule #2: Account for Talent and Class
+
+Rule #2 states that to ensure equal opportunity, the state must account for differences in natural talent and social class. Rawls argues that society shouldn’t limit opportunities necessary for obtaining wealth and power (education, jobs, and so on) to those who already have wealth or to those who are naturally talented. The class a person is born into and their natural talents are determined by chance, and therefore shouldn’t decide moral questions of who gets what in society.
+
+To account for differences in class, Rawls says the state must make education accessible to everyone—both in a technical or academic sense (medical school, for example) as well as in a cultural and experiential sense (an opportunity to network with practicing doctors, for example). To account for differences in natural talent, Rawls believes the difference principle must also apply to skilled versus unskilled labor—skilled laborers shouldn’t earn more than unskilled laborers, unless that would provide a greater benefit to those in the latter category.
+
+(Shortform note: Instead of trying to mitigate the effects of natural talents, many philosophers believe that society should organize itself and create social classes around these differences. Ancient Greek philosophers Plato and Aristotle, for example, believed the state should assign people to roles and classes in society based on whatever they’re particularly skilled at. In such a society, they said political leadership should go to the most morally virtuous citizens. Both Plato and Aristotle strongly believed moral virtue comes from extensive philosophical education—and therefore believed natural talent (in philosophy) can bestow the moral right to hold power.)
+
+Rule #3: Some Unequal Opportunity Is Just
+
+Rule #3 states that unequal opportunity is just as long as it benefits those with fewer opportunities more than it burdens everyone else. Society can provide additional opportunities to the less fortunate who otherwise struggle to gain wealth and power. This is just so long as the benefit to the unfortunate outweighs the burden on the fortunate. For example, New Zealand’s parliament reserves specific seats for Māori citizens—a historically oppressed group indigenous to the island. Rawls might argue that this unequal opportunity is just since it benefits an underrepresented group (the Māori) more than it harms an overrepresented group (non-indigenous New Zealanders).
+
+(Shortform note: The practice of administering additional benefits based on race (through affirmative action in the US, for example) often provokes debate about the role of a liberal government. Some argue for an extension of Rawls’s veil of ignorance, claiming government should create laws without considering specific components of citizens’ backgrounds (like race). They claim that race-conscious legislation like affirmative action goes against the liberal ideal of all laws applying to everyone equally. Proponents (like Rawls, seemingly) argue that it’s just for the government to help the less fortunate—and if historical circumstances mean certain races have fewer primary goods, then the government can acknowledge race to address that.)
+
+Part 4: Living Under Justice as Fairness
+
+After outlining the full principles of justice as fairness, Rawls discusses citizenship under justice as fairness. Rawls argues a just society should allow people to live however they like. It shouldn’t define an “ideal” way to live or moral code—justice as fairness purposely avoids doing so by relying entirely on the rational and logical debate in the original position. Rawls’s view on life in society is clear from his definition of primary benefits that we discussed in Part 1: benefits that allow someone to live whatever kind of life they want.
+
+(Shortform note: One common criticism of the liberal ideal of everyone living however they want is that within a society, strongly opposing moral viewpoints often conflict in a way that can’t be solved through rational debate alone. For example, contemporary debates over abortion rights involve strongly held differences in moral beliefs. Reason alone isn’t enough to solve the issue—if both sides of the debate sit down and have a rational discussion, they likely won’t come out agreeing with each other, because their arguments are based not on logic but on strong convictions about what’s right or wrong. Since the two perspectives are so different, one side will inevitably end up unable to live in the way that they like depending on how the state acts.)
+
+However, there are some exceptions to Rawls’s rule of everyone living however they like—areas where he believes society should enforce certain duties and values. Let’s explore each of these exceptions in more detail:
+
+Exception #1: Duties to Society
+
+While Rawls argues that societies must have duties that fit their specific circumstances, he does emphasize three in particular. Rawls believes that these duties promote the common good while still allowing citizens to pursue their own self-interest. Let’s explore each and examine how they accomplish this goal:
+
+Duty #1: Follow Existing Just Rules
+
+The first duty is to follow existing rules and laws in society that are just. This duty ensures citizens will follow the main principles of justice as fairness, which Rawls believes work toward the common good.
+
+In addition, this duty helps preserve social stability—something else that Rawls believes is a common good. It does so by ensuring citizens use existing political methods (voting, for example) to accomplish their goals instead of more radical, destabilizing methods that go against existing laws (violent protests or civil disobedience, for example). Rawls argues that citizens should only use these more drastic measures to address major injustices or violations of the principles of justice as fairness.
+
+(Shortform note: By warning against radical methods of social change, Rawls argues for a version of “enlightened conservatism,” or the philosophy of pursuing social reform through gradual, stable changes. Enlightened conservatives like 18th-century Anglo-Irish politician Edmund Burke believed that the best way to improve society was through empirically proven gradual reforms—in other words, making many small political changes over time based on what people know will work in practice while maintaining the stability of society overall. Burke goes farther than Rawls, arguing against all radical social reforms regardless of the injustices they try to address, saying they are too destabilizing and unproven to be worth the risk.)
+
+Duty #2: Create Just Rules
+
+The second duty citizens have is to help create just rules if they don’t exist—as long as doing so isn’t at a great personal cost. This duty ensures citizens will continue working to make their society more just, another common good. In addition, it allows citizens to pursue the common good in a way that doesn’t interfere with their own personal interests, since they won’t have to give up too much in their pursuit of a just society.
+
+For example, while citizens might have a duty to advocate or vote for a just public housing policy, Rawls doesn’t believe they’re obligated to allow homeless people to move in with them.
+
+(Shortform note: While Rawls claims citizens aren’t obligated to make great sacrifices to address injustice, some philosophers go as far as to say people shouldn’t. This is a classic idea in liberal philosophy, one that today is sometimes known as “effective altruism”: the theory that people can do greater overall good for society by working toward their own personal (usually economic) well-being. Versions of this theory exist in the works of classic liberals like Adam Smith as well as contemporary philosophers like Peter Singer. The basic idea behind it is that by pursuing your own well-being, you have more wealth available that you can use charitably or contribute to society, thereby creating a larger positive impact on the world.)
+
+Duty #3: Mutually Respect Fellow Citizens
+
+Rawls’s third duty requires citizens to be polite and respect one another. This means making a genuine attempt to understand others as well as having a certain degree of honesty, integrity, and generosity. This duty provides everyone a common good—living in a society full of considerate and helpful people—without harming the personal goals and interests of citizens much.
+
+(Shortform note: Some social theorists argue not only that individuals should mutually respect each other, but that the government should legislate mutual respect in some way—often through penalties on minor offenses and an emphasis on public order. For example, Singapore has a number of strict laws enforcing a kind of mutual respect through public order. These include significant fines and punishments for vandalism, chewing gum, littering, and even failing to flush public toilets. Lee Kuan Yew, the first prime minister of an independent Singapore, viewed these measures as part of a larger campaign to make the country orderly and clean, while critics view these measures as part of the country’s broad police and state overreach.)
+
+Exception #2: Preferable Life
+
+While Rawls doesn’t want to define an ideal way for someone to live their life, he does provide a broad sense of what kind of life might be preferable. Specifically, he argues in favor of a “rational life”: overall goals and values in life consistent with what someone would rationally choose. Unlike a specific idea of the best way to live, Rawls believes that the value of a rational life is self-evident instead of appealing to a broader sense of morality—after all, rational life is in service of what you yourself would choose in a moment of rational deliberation.
+
+(Shortform note: Rawls’s idea of a preferable life is similar to Kant’s theory of moral development in his Critique of Practical Reason. Like Rawls, Kant also believes morality is developed and reinforced through rational choice—specifically, choosing to consistently follow universal moral rules. In his later work Political Liberalism, though, Rawls elaborates on the role of reason in morality according to his theory. He says that while citizens should be free to develop their own private moral codes according to whatever they wish—including their own personal backgrounds and circumstances—they should approach public moral issues from the perspective of rational and “universal” (or at least society-wide and generally agreed upon) moral rules.)
+
+Exception #3: Shared Conceptions of Value
+
+While Rawls believes in avoiding judgments on how people live their lives, he does acknowledge that some society-wide conception of excellence is important—shared ideas of what is and isn’t valuable help people cooperate and communicate. For example, if you want someone to build you a barn, then you’d want to have a shared idea of what makes an excellent barn. Rawls introduces a relatively bare-bones definition of excellence that he believes works within justice as fairness: A thing (for example, an object, idea, or activity) is excellent if a rational person determines that it’s better than others of its type for living a fulfilling life. Let’s break down this definition into three parts, using an example:
+
+Randolph is trying to live a fulfilling life guided by reason. He wants to buy a new bike. He notices the Speedy Bike 100.
+Randolph uses rational deduction (examining the bike, testing it out, and so on) to determine that the Speedy Bike 100 is faster, safer, and easier to handle than most other bikes. These are all qualities he wants in a bike and qualities that will help him live his life—it’ll keep him safe and get him where he needs to go quickly.
+Therefore, the Speedy Bike 100 is an excellent bike—a rational person (Randolph) determines that it’s better than other bikes at helping him live a fulfilling life.
+
+Rawls’s theory of a shared conception of value doesn’t just allow people to compare different objects—people can use the same process to evaluate how “good” a decision is based on all the options available and on the potential consequences of it.
+
+(Shortform note: Keep in mind that for this process to work, people communicating have to have a shared definition of “rational choice” and “fulfilling life.” People who have different conceptions of a fulfilling life or who weigh options differently in their rational determinations can use Rawls’s process but still fail to communicate with each other effectively. For example, Portia highly prioritizes safety in her decision-making and lifestyle. Therefore, she wants a bike that’s sturdier but slower than the Speedy Bike 100. In this case, both Randolph and Portia use a rational process of decision-making to determine what’s best for a fulfilling life, but they still arrive at different answers.)
