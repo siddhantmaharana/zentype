@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZenType</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
 /* ─── Reset & variables ────────────────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,8 +14,8 @@
   --bg:           #141414;
   --surface:      #1c1c1c;
   --border:       #242424;
-  --text-dim:     #8a8a8a;       /* pending characters */
-  --text-typed:   #686868;       /* correctly typed */
+  --text-dim:     #b8b8b8;       /* pending characters */
+  --text-typed:   #888888;       /* correctly typed */
   --text-wrong:   #b85c5c;       /* mistyped */
   --text-ui:      #404040;       /* ui labels */
   --text-ui-hi:   #666;          /* ui values */
@@ -23,9 +23,10 @@
   --cursor-fg:    #e8e8e8;
   --accent:       #5a7a6a;
   --mono:         'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --serif:        'EB Garamond', 'Garamond', Georgia, serif;
   --sans:         'Inter', system-ui, sans-serif;
-  --line-h:       34px;
-  --font-sz:      15px;
+  --line-h:       36px;
+  --font-sz:      18px;
 }
 
 html, body {
@@ -164,7 +165,7 @@ html, body {
 
 
 #text-scroll {
-  font-family: var(--mono);
+  font-family: var(--serif);
   font-size: var(--font-sz);
   line-height: var(--line-h);
   white-space: pre-wrap;
@@ -201,6 +202,42 @@ html, body {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
+
+/* ── Reading mode ── */
+#btn-read {
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  border: 1px solid #2a2a2a;
+  background: none;
+  color: #505050;
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+#btn-read:hover { border-color: #3a3a3a; color: #888; }
+#btn-read.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(90,122,106,0.1);
+}
+
+body.reading-mode #text-window {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a transparent;
+  cursor: default;
+}
+body.reading-mode #text-window::-webkit-scrollbar { width: 4px; }
+body.reading-mode #text-window::-webkit-scrollbar-track { background: transparent; }
+body.reading-mode #text-window::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+body.reading-mode #text-scroll { transition: none; }
+body.reading-mode #text-scroll span,
+body.reading-mode #text-scroll span.ok,
+body.reading-mode #text-scroll span.cur { color: #d0d0d0; }
+body.reading-mode #text-scroll span.err { color: #b85c5c; }
+body.reading-mode #text-scroll span.cur::before { display: none; }
 
 /* ── Progress bar ── */
 #progress-bar {
@@ -448,6 +485,7 @@ html, body {
   <!-- Top bar -->
   <header id="topbar">
     <span id="logo">zentype</span>
+    <button id="btn-read" onclick="toggleReadMode()" hidden>read</button>
     <div id="stats">
       <div class="stat">
         <span class="stat-lbl">wpm</span>
@@ -558,7 +596,8 @@ let fileIdx  = 0;        // Current file index in fileList
 let pages    = [];       // Pages split from full text
 let pageIdx  = 0;        // Current page index
 let scrollY  = 0;        // Current scroll offset in px
-const LINE_H   = 34;       // Must match --line-h CSS var
+let readMode = false;    // Reading mode (native scroll, no typing)
+const LINE_H   = 36;       // Must match --line-h CSS var
 
 // ─── DOM refs ────────────────────────────────────────────────────────────────
 let   spanEls    = [];       // cached span references — avoids O(n) getElementById per keystroke
@@ -609,6 +648,7 @@ function repaint(prev) {
 }
 
 function scrollToLine() {
+  if (readMode) return;
   const curEl = spanEls[pos];
   if (!curEl) { scrollY = 0; scrollEl.style.transform = 'translateY(0)'; return; }
   const cursorTop    = curEl.offsetTop;
@@ -667,6 +707,7 @@ function focusInput() { kb.focus({ preventScroll: true }); }
 
 kb.addEventListener('keydown', (e) => {
   if (!chars.length) return;
+  if (readMode) return;
   if (document.getElementById('result').classList.contains('show')) return;
   if (e.ctrlKey || e.metaKey) return;
 
@@ -750,11 +791,15 @@ function loadText(text, name) {
   // File label: name + page if multi-page
   const label = pages.length > 1 ? `${name}  ·  ${pageIdx + 1} / ${pages.length}` : name;
 
+  // Exit reading mode if active
+  if (readMode) toggleReadMode();
+
   // Show typing area
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('typing-area').style.display = 'flex';
   document.getElementById('result').classList.remove('show');
   document.getElementById('btn-restart').hidden = false;
+  document.getElementById('btn-read').hidden = false;
   document.getElementById('btn-next-file').hidden = fileList.length <= 1;
   document.getElementById('res-next-file').hidden = fileList.length <= 1;
   document.getElementById('file-label').textContent = label;
@@ -783,6 +828,8 @@ function goHome() {
   document.getElementById('btn-next-page').hidden = true;
   document.getElementById('page-ind').hidden = true;
   document.getElementById('btn-next-file').hidden = true;
+  document.getElementById('btn-read').hidden = true;
+  if (readMode) toggleReadMode();
   fileText = ''; chars = []; pages = []; pageIdx = 0;
   clearInterval(timerTick);
 }
@@ -1001,6 +1048,23 @@ function clientStrip(txt) {
   txt = txt.replace(/^ | $/gm, '');        // trim leading/trailing space per line
   txt = txt.replace(/\n{3,}/g, '\n\n');    // max one blank line between paragraphs
   return txt.trim();
+}
+
+// ─── Reading mode ─────────────────────────────────────────────────────────────
+function toggleReadMode() {
+  readMode = !readMode;
+  document.body.classList.toggle('reading-mode', readMode);
+  const btn = document.getElementById('btn-read');
+  btn.classList.toggle('active', readMode);
+  btn.textContent = readMode ? 'type' : 'read';
+  if (readMode) {
+    scrollEl.style.transform = 'translateY(0)';
+    windowEl.removeAttribute('onclick');
+  } else {
+    windowEl.setAttribute('onclick', 'focusInput()');
+    scrollToLine();
+    focusInput();
+  }
 }
 
 // Close file picker on escape key

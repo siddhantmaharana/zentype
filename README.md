@@ -17,6 +17,12 @@ pip install pywebview
 python3 main.py
 ```
 ## Changelog
+#### @2026-03-31-Tue:  Font and reading mode
+- Increase brightness for the fonts. 
+- Create a reading mode. Toggle reading mode at the top, which lets you scroll the page too. Right now, that option is not available
+
+
+
 #### @2026-03-24-Tue:  Created a basic app 
 - can drop txt/md files, and can navigate by pages
 - simple typing app as of ow
