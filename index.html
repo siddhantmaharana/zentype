@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZenType</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;1,7..72,300;1,7..72,400&display=swap" rel="stylesheet">
 <style>
 /* ─── Reset & variables ────────────────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,10 +23,10 @@
   --cursor-fg:    #e8e8e8;
   --accent:       #5a7a6a;
   --mono:         'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-  --serif:        'EB Garamond', 'Garamond', Georgia, serif;
+  --serif:        'Literata', 'Georgia', 'Times New Roman', serif;
   --sans:         'Inter', system-ui, sans-serif;
-  --line-h:       36px;
-  --font-sz:      18px;
+  --line-h:       32px;
+  --font-sz:      17px;
 }
 
 html, body {
@@ -170,6 +170,8 @@ html, body {
   line-height: var(--line-h);
   white-space: pre-wrap;
   word-break: break-word;
+  letter-spacing: 0.01em;
+  font-feature-settings: 'kern' 1, 'liga' 1;
   transition: transform 0.06s ease;
   will-change: transform;
 }
@@ -201,6 +203,37 @@ html, body {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
+}
+
+/* ── Font size controls ── */
+#font-size-ctrl {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+#font-size-ctrl.show { display: flex; }
+.btn-font {
+  background: none;
+  border: none;
+  color: #444;
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  line-height: 1;
+  transition: color 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.btn-font:hover { color: #888; }
+#font-size-val {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #404040;
+  min-width: 26px;
+  text-align: center;
+  letter-spacing: 0.05em;
 }
 
 /* ── Reading mode ── */
@@ -485,6 +518,11 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
   <!-- Top bar -->
   <header id="topbar">
     <span id="logo">zentype</span>
+    <div id="font-size-ctrl">
+      <button class="btn-font" onclick="changeFontSize(-1)" title="decrease font size">A−</button>
+      <span id="font-size-val"></span>
+      <button class="btn-font" onclick="changeFontSize(1)" title="increase font size">A+</button>
+    </div>
     <button id="btn-read" onclick="toggleReadMode()" hidden>read</button>
     <div id="stats">
       <div class="stat">
@@ -508,8 +546,8 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
     <!-- Welcome state -->
     <div id="welcome">
       <div id="welcome-title">zentype</div>
-      <div id="welcome-sub">type your obsidian notes.<br>drop a .md file anywhere, or use the buttons below.</div>
-      <div id="drop-hint">drop .md / .txt here</div>
+      <div id="welcome-sub">type your obsidian notes.<br>drop files, paste text, or use the buttons below.</div>
+      <div id="drop-hint">drop files, paste text, or press Ctrl+V to paste</div>
     </div>
 
     <!-- Typing area (hidden until file loaded) -->
@@ -597,6 +635,12 @@ let pages    = [];       // Pages split from full text
 let pageIdx  = 0;        // Current page index
 let scrollY  = 0;        // Current scroll offset in px
 let readMode = false;    // Reading mode (native scroll, no typing)
+let idleTimer = null;    // setTimeout for idle detection
+let idleTime = 0;        // Total idle time accumulated
+let lastActiveTime = null; // Last time user was actively typing
+let totalKeystrokes = 0; // Total keystrokes made
+let corrections = 0;     // Number of backspace corrections
+const IDLE_DELAY = 5000; // 5 seconds before pause
 const LINE_H   = 36;       // Must match --line-h CSS var
 
 // ─── DOM refs ────────────────────────────────────────────────────────────────
@@ -651,16 +695,15 @@ function scrollToLine() {
   if (readMode) return;
   const curEl = spanEls[pos];
   if (!curEl) { scrollY = 0; scrollEl.style.transform = 'translateY(0)'; return; }
+  const lh           = window._lineH || LINE_H;
   const cursorTop    = curEl.offsetTop;
   const windowH      = windowEl.offsetHeight;
   const visibleBot   = scrollY + windowH;
 
-  if (cursorTop < scrollY + LINE_H) {
-    // cursor scrolled above visible area — scroll up
-    scrollY = Math.max(0, cursorTop - LINE_H);
-  } else if (cursorTop + LINE_H * 2 > visibleBot) {
-    // cursor near bottom edge — scroll down just enough
-    scrollY = Math.max(0, cursorTop + LINE_H * 2 - windowH);
+  if (cursorTop < scrollY + lh) {
+    scrollY = Math.max(0, cursorTop - lh);
+  } else if (cursorTop + lh * 2 > visibleBot) {
+    scrollY = Math.max(0, cursorTop + lh * 2 - windowH);
   }
   scrollEl.style.transform = `translateY(${-scrollY}px)`;
 }
@@ -679,14 +722,61 @@ function skipNewlinesBack() {
   while (pos > 0 && chars[pos] === '\n') pos--;
 }
 
+// Reset idle timer when user is active
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  if (startTime && !readMode) {
+    idleTimer = setTimeout(goIdle, IDLE_DELAY);
+    lastActiveTime = Date.now();
+  }
+}
+
+// Called when user goes idle
+function goIdle() {
+  if (startTime && !readMode && idleTimer) {
+    idleTime += Date.now() - lastActiveTime;
+    idleTimer = null; // Clear timer to indicate idle state
+    // Visual indicator could be added here
+  }
+}
+
+// Resume from idle state
+function resumeFromIdle() {
+  if (startTime && !readMode && !idleTimer) {
+    // We were idle, so reset the active time and start new timer
+    lastActiveTime = Date.now();
+    resetIdleTimer();
+  }
+}
+
+// Adjust time calculation to exclude idle periods
+function getActiveTime() {
+  if (!startTime) return 0;
+  const totalElapsed = Date.now() - startTime;
+  
+  // If we're currently idle (no active timer), subtract the idle period
+  if (!idleTimer) {
+    const currentIdlePeriod = Date.now() - lastActiveTime;
+    return Math.max(0, totalElapsed - idleTime - currentIdlePeriod);
+  }
+  
+  // If we're actively typing, only subtract accumulated idle time
+  return Math.max(0, totalElapsed - idleTime);
+}
+
 // ─── Live stats ──────────────────────────────────────────────────────────────
 function liveStats() {
   if (!startTime) return;
-  const secs   = (Date.now() - startTime) / 1000;
+  const secs   = getActiveTime() / 1000;
   const mins   = secs / 60;
   const good   = pos - errSet.size;
   const wpm    = mins > 0 ? Math.round((good / 5) / mins) : 0;
-  const acc    = pos > 0 ? Math.round((good / pos) * 100) : 100;
+  
+  // Calculate accuracy based on total keystrokes (including corrections)
+  // Total attempts = correct characters + errors + corrections
+  const totalAttempts = totalKeystrokes;
+  const acc = totalAttempts > 0 ? Math.round((good / totalAttempts) * 100) : 100;
+  
   const timeStr = secs < 60
     ? Math.round(secs) + 's'
     : Math.floor(secs / 60) + 'm ' + (Math.round(secs) % 60) + 's';
@@ -706,6 +796,13 @@ window.addEventListener('keydown', focusInput);
 function focusInput() { kb.focus({ preventScroll: true }); }
 
 kb.addEventListener('keydown', (e) => {
+  // Handle paste when no text is loaded (welcome screen)
+  if (!chars.length && (e.ctrlKey || e.metaKey) && e.key === 'v') {
+    e.preventDefault();
+    handlePaste();
+    return;
+  }
+  
   if (!chars.length) return;
   if (readMode) return;
   if (document.getElementById('result').classList.contains('show')) return;
@@ -716,18 +813,37 @@ kb.addEventListener('keydown', (e) => {
   if (e.key === 'Backspace') {
     e.preventDefault();
     const prev = pos;
-    if (pos > 0) { pos--; skipNewlinesBack(); }
+    if (pos > 0) { 
+      pos--; 
+      // Track correction
+      corrections++;
+      totalKeystrokes++;
+      // Remove error if we're backspacing over an error position
+      if (errSet.has(pos)) {
+        errSet.delete(pos);
+      }
+      skipNewlinesBack(); 
+    }
     repaint(prev);
+    resetIdleTimer(); // Reset idle timer on backspace
     return;
   }
 
   if (e.key.length !== 1) return; // ignore F-keys, arrows, etc.
   e.preventDefault();
+  
+  // Track keystroke
+  totalKeystrokes++;
 
   if (!startTime) {
     startTime = Date.now();
+    lastActiveTime = Date.now();
     timerTick = setInterval(liveStats, 500);
+    resetIdleTimer();
   }
+
+  resumeFromIdle(); // Resume from idle when typing again
+  resetIdleTimer(); // Reset idle timer on each keystroke
 
   const prev = pos;
   if (e.key !== chars[pos]) errSet.add(pos);
@@ -737,6 +853,38 @@ kb.addEventListener('keydown', (e) => {
 
   if (pos >= chars.length) finishSession();
 });
+
+// ─── Font size control ────────────────────────────────────────────────────────
+const FONT_SIZES = [13, 15, 17, 19, 22, 26]; // px steps
+const FONT_LINE_RATIO = 1.85; // line-height multiplier
+let fontSizeIdx = parseInt(localStorage.getItem('zentype-font-idx') ?? '2', 10);
+
+function applyFontSize() {
+  const sz = FONT_SIZES[fontSizeIdx];
+  const lh = Math.round(sz * FONT_LINE_RATIO);
+  document.documentElement.style.setProperty('--font-sz', sz + 'px');
+  document.documentElement.style.setProperty('--line-h', lh + 'px');
+  document.getElementById('font-size-val').textContent = sz + 'px';
+  // Keep the JS LINE_H constant in sync so scrollToLine() works correctly
+  window._lineH = lh;
+}
+
+function changeFontSize(dir) {
+  const next = fontSizeIdx + dir;
+  if (next < 0 || next >= FONT_SIZES.length) return;
+  fontSizeIdx = next;
+  localStorage.setItem('zentype-font-idx', fontSizeIdx);
+  applyFontSize();
+  if (chars.length) { scrollY = 0; scrollEl.style.transform = 'translateY(0)'; scrollToLine(); }
+}
+
+// Apply saved preference on load
+applyFontSize();
+
+// Show font controls when typing area is visible
+function showFontCtrl(show) {
+  document.getElementById('font-size-ctrl').classList.toggle('show', show);
+}
 
 // ─── Pagination ──────────────────────────────────────────────────────────────
 const PAGE_SIZE = 1800; // target chars per page (~15-20 visible lines)
@@ -781,6 +929,12 @@ function loadText(text, name) {
   startTime = null;
   clearInterval(timerTick);
   timerTick = null;
+  clearTimeout(idleTimer);
+  idleTimer = null;
+  idleTime = 0;
+  lastActiveTime = null;
+  totalKeystrokes = 0;
+  corrections = 0;
 
   // Reset stats display
   [wpmEl, accEl, timeEl].forEach(el => {
@@ -800,6 +954,7 @@ function loadText(text, name) {
   document.getElementById('result').classList.remove('show');
   document.getElementById('btn-restart').hidden = false;
   document.getElementById('btn-read').hidden = false;
+  showFontCtrl(true);
   document.getElementById('btn-next-file').hidden = fileList.length <= 1;
   document.getElementById('res-next-file').hidden = fileList.length <= 1;
   document.getElementById('file-label').textContent = label;
@@ -829,6 +984,7 @@ function goHome() {
   document.getElementById('page-ind').hidden = true;
   document.getElementById('btn-next-file').hidden = true;
   document.getElementById('btn-read').hidden = true;
+  showFontCtrl(false);
   if (readMode) toggleReadMode();
   fileText = ''; chars = []; pages = []; pageIdx = 0;
   clearInterval(timerTick);
@@ -836,11 +992,16 @@ function goHome() {
 
 function finishSession() {
   clearInterval(timerTick);
-  const secs = (Date.now() - startTime) / 1000;
+  clearTimeout(idleTimer);
+  const secs = getActiveTime() / 1000;
   const mins = secs / 60;
   const good = pos - errSet.size;
-  const wpm  = Math.round((good / 5) / mins);
-  const acc  = Math.round((good / pos) * 100);
+  const wpm  = mins > 0 ? Math.round((good / 5) / mins) : 0;
+  
+  // Calculate accuracy based on total keystrokes (including corrections)
+  const totalAttempts = totalKeystrokes;
+  const acc = totalAttempts > 0 ? Math.round((good / totalAttempts) * 100) : 100;
+  
   const timeStr = secs < 60
     ? Math.round(secs) + 's'
     : Math.floor(secs / 60) + 'm ' + (Math.round(secs) % 60) + 's';
@@ -1004,6 +1165,17 @@ document.addEventListener('drop', async (e) => {
   dragCount = 0;
   overlay.classList.remove('show');
   const dropped = [];
+  
+  // Handle text content dragged directly
+  const textData = e.dataTransfer.getData('text/plain');
+  if (textData && textData.trim().length >= 50) {
+    const clean = clientStrip(textData);
+    if (clean.length >= 50) {
+      dropped.push({ name: 'pasted text', text: clean });
+    }
+  }
+  
+  // Handle files
   for (const f of e.dataTransfer.files) {
     if (/\.(md|txt)$/i.test(f.name)) {
       const raw   = await f.text();
@@ -1012,6 +1184,7 @@ document.addEventListener('drop', async (e) => {
         dropped.push({ name: f.name.replace(/\.(md|txt)$/i, ''), text: clean });
     }
   }
+  
   if (!dropped.length) return;
   fileList = dropped;
   fileIdx  = 0;
@@ -1024,6 +1197,50 @@ document.addEventListener('drop', async (e) => {
     showFilePicker();
   }
 });
+
+// ─── Paste functionality ───────────────────────────────────────────────────────────
+async function handlePaste() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text && text.trim().length >= 50) {
+      const clean = clientStrip(text);
+      if (clean.length >= 50) {
+        fileList = [{ name: 'pasted text', text: clean }];
+        fileIdx = 0;
+        pages = splitPages(clean);
+        pageIdx = 0;
+        loadPage(0);
+      }
+    }
+  } catch (err) {
+    // Fallback for browsers that don't support clipboard API
+    // Use a temporary textarea to paste
+    const tempArea = document.createElement('textarea');
+    tempArea.style.position = 'fixed';
+    tempArea.style.opacity = '0';
+    tempArea.value = '';
+    document.body.appendChild(tempArea);
+    tempArea.focus();
+    tempArea.select();
+    
+    // Execute paste command
+    document.execCommand('paste');
+    
+    const pastedText = tempArea.value;
+    document.body.removeChild(tempArea);
+    
+    if (pastedText && pastedText.trim().length >= 50) {
+      const clean = clientStrip(pastedText);
+      if (clean.length >= 50) {
+        fileList = [{ name: 'pasted text', text: clean }];
+        fileIdx = 0;
+        pages = splitPages(clean);
+        pageIdx = 0;
+        loadPage(0);
+      }
+    }
+  }
+}
 
 // ─── Client-side markdown strip (fallback when no Python) ─────────────────────
 function clientStrip(txt) {
@@ -1077,3 +1294,4 @@ document.addEventListener('keydown', (e) => {
 </script>
 </body>
 </html>
+

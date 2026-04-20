@@ -1,3 +1,4 @@
+
 """
 ZenType — a minimal typing app for your Obsidian vault.
 Requires: pip install pywebview
