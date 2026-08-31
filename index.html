@@ -22,6 +22,7 @@
   --cursor-bg:    #5a7a6a;       /* muted sage */
   --cursor-fg:    #e8e8e8;
   --accent:       #5a7a6a;
+  --amber:        #b8905a;
   --mono:         'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   --serif:        'Literata', 'Georgia', 'Times New Roman', serif;
   --sans:         'Inter', system-ui, sans-serif;
@@ -42,7 +43,7 @@ html, body {
 /* ─── Layout ────────────────────────────────────────────────────────────────── */
 #app {
   display: grid;
-  grid-template-rows: 48px 1fr 56px;
+  grid-template-rows: 48px 1fr;
   height: 100vh;
 }
 
@@ -53,6 +54,7 @@ html, body {
   justify-content: space-between;
   padding: 0 32px;
   border-bottom: 1px solid transparent;
+  transition: opacity 0.3s;
 }
 
 #logo {
@@ -61,11 +63,14 @@ html, body {
   font-weight: 400;
   letter-spacing: 0.15em;
   color: #585858;
+  cursor: pointer;
+  transition: color 0.15s;
 }
+#logo:hover { color: #888; }
 
 #stats {
   display: flex;
-  gap: 32px;
+  gap: 28px;
   align-items: center;
 }
 
@@ -87,7 +92,7 @@ html, body {
   font-size: 15px;
   font-weight: 500;
   color: #606060;
-  min-width: 38px;
+  min-width: 30px;
   text-align: right;
   transition: color 0.3s;
 }
@@ -147,54 +152,86 @@ html, body {
   display: none;
   flex-direction: column;
   align-items: center;
-  width: min(860px, 100% - 120px);
+  width: min(860px, 100% - 160px);
   flex: 1;
   min-height: 0;
   gap: 12px;
 }
 
-/* The visible window of text — fills available height */
+/* Continuous-scroll text container — this is now a real scrollable region */
 #text-window {
   width: 100%;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #232323 transparent;
   cursor: text;
+  padding: 4px 4px 40vh;
 }
+#text-window::-webkit-scrollbar { width: 5px; }
+#text-window::-webkit-scrollbar-track { background: transparent; }
+#text-window::-webkit-scrollbar-thumb { background: #232323; border-radius: 3px; }
 
-
-#text-scroll {
+#text-flow {
   font-family: var(--serif);
   font-size: var(--font-sz);
   line-height: var(--line-h);
-  white-space: pre-wrap;
-  word-break: break-word;
   letter-spacing: 0.01em;
   font-feature-settings: 'kern' 1, 'liga' 1;
-  transition: transform 0.06s ease;
-  will-change: transform;
 }
 
-/* Character states */
-#text-scroll span { color: var(--text-dim); }
-#text-scroll span.ok   { color: var(--text-typed); }
-#text-scroll span.err  {
+/* ── Paragraph blocks ── */
+.para { margin-bottom: 30px; white-space: pre-wrap; word-break: break-word; }
+.para.pending { color: var(--text-dim); opacity: 0.5; }
+.para.done .para-text { color: var(--text-typed); }
+.para-stats {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-ui-hi);
+  letter-spacing: 0.03em;
+  margin-top: 7px;
+  opacity: 0.8;
+}
+
+.para-header {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6a7a70;
+  margin: 40px 0 22px;
+  opacity: 0.85;
+}
+.para-header.done { opacity: 0.4; }
+.para-header:first-child { margin-top: 0; }
+
+/* Character states inside the active paragraph */
+.para.current span { color: var(--text-dim); }
+.para.current span.ok   { color: var(--text-typed); }
+.para.current span.err  {
   color: var(--text-wrong);
   text-decoration: underline;
   text-decoration-color: #c0392b88;
   text-underline-offset: 3px;
 }
-#text-scroll span.cur {
+.para.current span[data-sp="1"].ok {
+  text-decoration: underline;
+  text-decoration-color: #55555588;
+  text-underline-offset: 4px;
+}
+.para.current span.cur {
   position: relative;
   color: var(--text-dim);
 }
-#text-scroll span.cur::before {
+.para.current span.cur::before {
   content: '';
   position: absolute;
   left: -1px;
-  top: 18%;
-  bottom: 18%;
+  top: 8%;
+  bottom: 8%;
   width: 2px;
   background: var(--accent);
   border-radius: 1px;
@@ -204,6 +241,18 @@ html, body {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
+
+/* ── End of document marker ── */
+#doc-complete {
+  text-align: center;
+  padding: 30px 0 60px;
+  font-family: var(--mono);
+}
+.dc-label { color: #3a3a3a; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 10px; }
+.dc-stats { color: var(--accent); font-size: 13px; letter-spacing: 0.04em; }
+
+/* ── Idle / pause dimming ── */
+body.idle-paused #text-window { opacity: 0.5; transition: opacity 0.5s; }
 
 /* ── Font size controls ── */
 #font-size-ctrl {
@@ -227,7 +276,7 @@ html, body {
   -webkit-user-select: none;
 }
 .btn-font:hover { color: #888; }
-#font-size-val {
+#font-size-val, #qs-font-val {
   font-family: var(--mono);
   font-size: 10px;
   color: #404040;
@@ -235,42 +284,6 @@ html, body {
   text-align: center;
   letter-spacing: 0.05em;
 }
-
-/* ── Reading mode ── */
-#btn-read {
-  font-size: 10px;
-  padding: 4px 10px;
-  border-radius: 3px;
-  border: 1px solid #2a2a2a;
-  background: none;
-  color: #505050;
-  font-family: var(--mono);
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-#btn-read:hover { border-color: #3a3a3a; color: #888; }
-#btn-read.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(90,122,106,0.1);
-}
-
-body.reading-mode #text-window {
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #2a2a2a transparent;
-  cursor: default;
-}
-body.reading-mode #text-window::-webkit-scrollbar { width: 4px; }
-body.reading-mode #text-window::-webkit-scrollbar-track { background: transparent; }
-body.reading-mode #text-window::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-body.reading-mode #text-scroll { transition: none; }
-body.reading-mode #text-scroll span,
-body.reading-mode #text-scroll span.ok,
-body.reading-mode #text-scroll span.cur { color: #d0d0d0; }
-body.reading-mode #text-scroll span.err { color: #b85c5c; }
-body.reading-mode #text-scroll span.cur::before { display: none; }
 
 /* ── Progress bar ── */
 #progress-bar {
@@ -297,16 +310,6 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
   letter-spacing: 0.08em;
   text-transform: lowercase;
   align-self: flex-start;
-}
-
-/* ─── Bottom bar ────────────────────────────────────────────────────────────── */
-#bottombar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  border-top: 1px solid transparent;
-  padding: 0 32px;
 }
 
 .btn {
@@ -362,154 +365,150 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
 
 #drag-overlay.show { display: flex; }
 
-/* ─── Result screen ─────────────────────────────────────────────────────────── */
-#result {
+/* ─── Floating toolbar ──────────────────────────────────────────────────────── */
+#toolbar {
   display: none;
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  z-index: 100;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-}
-
-#result.show { display: flex; }
-
-#result-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #2a2a2a;
-}
-
-#result-nums {
-  display: flex;
-  gap: 64px;
-  align-items: flex-end;
-}
-
-.rnum {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.rnum .n {
-  font-family: var(--mono);
-  font-size: 64px;
-  font-weight: 300;
-  line-height: 1;
-  color: var(--accent);
-}
-
-.rnum .n.dim { color: #333; font-size: 48px; }
-
-.rnum .l {
-  font-family: var(--mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #333;
-}
-
-#result-actions {
-  display: flex;
-  gap: 12px;
-}
-
-/* ─── Page indicator ────────────────────────────────────────────────────────── */
-.page-ind {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: #4a4a4a;
-  padding: 6px 4px;
-  letter-spacing: 0.06em;
-  min-width: 40px;
-  text-align: center;
-}
-
-/* ─── File selector modal (for folder with multiple files) ──────────────────── */
-#file-picker {
-  display: none;
+  gap: 7px;
   position: fixed;
-  inset: 0;
-  background: rgba(20,20,20,0.92);
-  z-index: 150;
-  align-items: center;
-  justify-content: center;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 60;
+  transition: opacity 0.3s;
 }
+#toolbar.show { display: flex; }
 
-#file-picker.show { display: flex; }
-
-#file-list {
-  background: var(--surface);
-  border: 1px solid var(--border);
+.tb-btn {
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
-  width: 480px;
-  max-height: 420px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: #5a5a5a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.tb-btn:hover { color: var(--accent); border-color: #2a3d35; }
+.tb-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(90,122,106,0.14); }
+
+body.zen-mode #topbar,
+body.zen-mode #file-label,
+body.zen-mode #progress-bar {
+  opacity: 0;
+  pointer-events: none;
+}
+body.zen-mode #toolbar { opacity: 0.3; }
+body.zen-mode #toolbar:hover { opacity: 1; }
+body.zen-mode .para.pending,
+body.zen-mode .para-header { opacity: 0.22; }
+
+/* ─── Side drawer (TOC / Quick Settings / Focus Sounds) ──────────────────────── */
+#side-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(360px, 92vw);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 120;
   display: flex;
   flex-direction: column;
+  user-select: text;
+  -webkit-user-select: text;
 }
+#side-drawer.open { transform: translateX(0); }
 
-#file-list-header {
-  padding: 16px 20px;
+#drawer-header {
+  padding: 18px 22px;
   border-bottom: 1px solid var(--border);
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: #444;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
-
-#file-list-header button {
-  background: none;
-  border: none;
-  color: #444;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0 4px;
-  transition: color 0.15s;
+#drawer-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #777;
 }
+#drawer-close {
+  background: none; border: none; color: #444; font-size: 15px; cursor: pointer; padding: 2px 6px;
+}
+#drawer-close:hover { color: #888; }
 
-#file-list-header button:hover { color: #888; }
-
-#file-list-items {
+#drawer-body {
+  padding: 20px 22px;
   overflow-y: auto;
   flex: 1;
-}
-
-#file-list-items::-webkit-scrollbar { width: 4px; }
-#file-list-items::-webkit-scrollbar-track { background: transparent; }
-#file-list-items::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-
-.file-item {
-  padding: 11px 20px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: #484848;
-  cursor: pointer;
-  border-bottom: 1px solid #1c1c1c;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 13px;
+  color: #999;
+}
+#drawer-body::-webkit-scrollbar { width: 4px; }
+#drawer-body::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+.drawer-empty { color: #444; font-family: var(--mono); font-size: 12px; }
+
+/* Quick settings rows */
+.qs-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.qs-row label { font-size: 12px; color: #888; }
+.qs-row select {
+  background: var(--bg); color: #999; border: 1px solid var(--border); border-radius: 4px;
+  padding: 5px 8px; font-family: var(--mono); font-size: 11px;
+}
+.qs-font-ctrl { display: flex; align-items: center; gap: 6px; }
+.qs-divider { height: 1px; background: var(--border); margin: 2px 0; }
+.qs-toggle { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; cursor: pointer; }
+.qs-toggle input { accent-color: var(--accent); width: 14px; height: 14px; }
+
+/* TOC */
+.toc-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 4px;
+  border-bottom: 1px solid #1e1e1e; cursor: pointer; font-size: 12.5px; color: #888;
+  transition: color 0.15s;
+}
+.toc-item:hover { color: #ccc; }
+.toc-dot { width: 7px; height: 7px; border-radius: 50%; background: #333; flex-shrink: 0; }
+.toc-item.done .toc-dot { background: var(--accent); }
+.toc-item.current .toc-dot { background: var(--accent); box-shadow: 0 0 0 3px rgba(90,122,106,0.25); }
+.toc-item.partial .toc-dot { background: var(--amber); }
+.toc-item.current { color: var(--accent); }
+
+/* Focus sounds */
+.focus-track { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.focus-track-name { font-size: 13px; color: #ccc; }
+.focus-track-sub { font-size: 11px; color: #555; }
+input[type="range"] { accent-color: var(--accent); width: 140px; }
+
+/* ─── Pause overlay ─────────────────────────────────────────────────────────── */
+#pause-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.86);
+  z-index: 180;
   align-items: center;
-  transition: background 0.1s, color 0.1s;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
 }
-
-.file-item:hover {
-  background: #1e1e1e;
-  color: #888;
-}
-
-.file-item .char-count {
-  font-size: 10px;
-  color: #2a2a2a;
-}
+#pause-overlay.show { display: flex; }
+.pause-icon { font-size: 22px; color: var(--accent); }
+.pause-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #888; }
+.pause-hint { font-family: var(--mono); font-size: 10px; color: #444; }
 </style>
 </head>
 <body>
@@ -517,13 +516,12 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
 
   <!-- Top bar -->
   <header id="topbar">
-    <span id="logo">zentype</span>
+    <span id="logo" onclick="goHome()" title="paste new text">zentype</span>
     <div id="font-size-ctrl">
       <button class="btn-font" onclick="changeFontSize(-1)" title="decrease font size">A−</button>
       <span id="font-size-val"></span>
       <button class="btn-font" onclick="changeFontSize(1)" title="increase font size">A+</button>
     </div>
-    <button id="btn-read" onclick="toggleReadMode()" hidden>read</button>
     <div id="stats">
       <div class="stat">
         <span class="stat-lbl">wpm</span>
@@ -537,6 +535,10 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
         <span class="stat-lbl">time</span>
         <span class="stat-val" id="sv-time">—</span>
       </div>
+      <div class="stat">
+        <span class="stat-lbl">xp</span>
+        <span class="stat-val" id="sv-xp">0</span>
+      </div>
     </div>
   </header>
 
@@ -546,14 +548,15 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
     <!-- Welcome state -->
     <div id="welcome">
       <div id="welcome-title">zentype</div>
-      <div id="welcome-sub">type your obsidian notes.<br>drop files, paste text, or use the buttons below.</div>
-      <div id="drop-hint">drop files, paste text, or press Ctrl+V to paste</div>
+      <div id="welcome-sub">copy some text, then paste it here to start typing.</div>
+      <div id="drop-hint">press Ctrl+V to paste</div>
     </div>
 
     <!-- Typing area (hidden until file loaded) -->
     <div id="typing-area">
-      <div id="text-window" onclick="focusInput()">
-        <div id="text-scroll"></div>
+      <div id="text-window">
+        <div id="text-flow"></div>
+        <div id="doc-complete" hidden></div>
       </div>
       <div id="progress-bar"><div id="progress-fill"></div></div>
       <div id="file-label"></div>
@@ -561,57 +564,37 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
 
   </main>
 
-  <!-- Bottom bar -->
-  <footer id="bottombar">
-    <button class="btn" onclick="handleOpenFile()">open file</button>
-    <button class="btn" onclick="handleOpenFolder()">open folder</button>
-    <button class="btn" id="btn-restart" hidden onclick="restart()">restart</button>
-    <button class="btn" id="btn-prev" hidden onclick="prevPage()">← prev</button>
-    <span class="page-ind" id="page-ind" hidden></span>
-    <button class="btn" id="btn-next-page" hidden onclick="nextPage()">next →</button>
-    <button class="btn accent" id="btn-next-file" hidden onclick="showFilePicker()">next file</button>
-  </footer>
+</div>
 
+<!-- Floating toolbar (typer view only) -->
+<div id="toolbar">
+  <button class="tb-btn" title="previous section" onclick="gotoAdjacentSection(-1)">‹</button>
+  <button class="tb-btn" title="table of contents" onclick="openDrawer('toc')">📖</button>
+  <button class="tb-btn" title="next section" onclick="gotoAdjacentSection(1)">›</button>
+  <button class="tb-btn" title="quick settings" onclick="openDrawer('settings')">⚙</button>
+  <button class="tb-btn" title="focus sounds" onclick="openDrawer('focus')">🎧</button>
+  <button class="tb-btn" id="tb-zen" title="zen mode" onclick="toggleZen()">☸</button>
+  <button class="tb-btn" title="restart document" onclick="restart()">↺</button>
+</div>
+
+<!-- Side drawer -->
+<div id="side-drawer">
+  <div id="drawer-header">
+    <span id="drawer-title"></span>
+    <button id="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div id="drawer-body"></div>
+</div>
+
+<!-- Pause overlay -->
+<div id="pause-overlay">
+  <div class="pause-icon">‖</div>
+  <div class="pause-label">paused</div>
+  <div class="pause-hint">click or press any key to resume</div>
 </div>
 
 <!-- Drag overlay -->
 <div id="drag-overlay"><span>↓</span><span>drop to load</span></div>
-
-<!-- Result screen -->
-<div id="result">
-  <div id="result-label">session complete</div>
-  <div id="result-nums">
-    <div class="rnum">
-      <span class="n" id="rn-wpm">0</span>
-      <span class="l">wpm</span>
-    </div>
-    <div class="rnum">
-      <span class="n" id="rn-acc">0</span>
-      <span class="l">accuracy</span>
-    </div>
-    <div class="rnum">
-      <span class="n dim" id="rn-time">0s</span>
-      <span class="l">time</span>
-    </div>
-  </div>
-  <div id="result-actions">
-    <button class="btn accent" onclick="restart()">again</button>
-    <button class="btn accent" id="res-next-page" hidden onclick="nextPage()">next page</button>
-    <button class="btn" onclick="goHome()">home</button>
-    <button class="btn" id="res-next-file" hidden onclick="showFilePicker()">next file</button>
-  </div>
-</div>
-
-<!-- File picker modal -->
-<div id="file-picker">
-  <div id="file-list">
-    <div id="file-list-header">
-      <span id="file-list-count">files</span>
-      <button onclick="closeFilePicker()">✕</button>
-    </div>
-    <div id="file-list-items"></div>
-  </div>
-</div>
 
 <!-- Hidden textarea to capture keyboard input reliably -->
 <textarea id="kb"
@@ -621,218 +604,421 @@ body.reading-mode #text-scroll span.cur::before { display: none; }
 
 <script>
 'use strict';
+
+// ─── Settings & persistence ──────────────────────────────────────────────────
+const SETTINGS_KEY = 'zentype:settings';
+const DEFAULT_SETTINGS = {
+  fontSizeIdx: 2,
+  cursorMotion: 'smooth',
+  trainingMode: false,
+  backtrackWords: 3,
+  ignoreCaps: false,
+  stopOnError: false,
+  autoSkipSymbols: false,
+  focusVolume: 0.4,
+  audioEnabled: false,
+  clickVolume: 0.5,
+  errorVolume: 0.6,
+};
+
+function loadSettings() {
+  try {
+    return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));
+  } catch (e) {
+    return Object.assign({}, DEFAULT_SETTINGS);
+  }
+}
+function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+function hashText(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
+}
+const docKey = (hash) => 'zentype:doc:' + hash;
+
+function loadDocState(hash) {
+  try { return JSON.parse(localStorage.getItem(docKey(hash))); } catch (e) { return null; }
+}
+function saveDocState() {
+  if (!doc) return;
+  localStorage.setItem(docKey(doc.hash), JSON.stringify({
+    name: doc.name,
+    curIdx,
+    paras: paragraphs.map(p => ({ status: p.status, wpm: p.wpm, accuracy: p.accuracy, xp: p.xp, errorCount: p.errorCount })),
+    updatedAt: Date.now(),
+  }));
+}
 // ─── State ───────────────────────────────────────────────────────────────────
-let chars    = [];       // Array of characters to type
-let pos      = 0;        // Current character index
-let errSet   = new Set();// Positions where an error was made
-let startTime= null;     // Date.now() when first key pressed
-let timerTick= null;     // setInterval for live WPM
-let fileText = '';       // Raw text of current page
-let fileName = '';       // Display name
-let fileList = [];       // All files from a folder load
-let fileIdx  = 0;        // Current file index in fileList
-let pages    = [];       // Pages split from full text
-let pageIdx  = 0;        // Current page index
-let scrollY  = 0;        // Current scroll offset in px
-let readMode = false;    // Reading mode (native scroll, no typing)
-let idleTimer = null;    // setTimeout for idle detection
-let idleTime = 0;        // Total idle time accumulated
-let lastActiveTime = null; // Last time user was actively typing
-let totalKeystrokes = 0; // Total keystrokes made
-let corrections = 0;     // Number of backspace corrections
-const IDLE_DELAY = 5000; // 5 seconds before pause
-const LINE_H   = 36;       // Must match --line-h CSS var
+let settings   = loadSettings();
+let doc        = null;   // { name, hash }
+let paragraphs = [];     // [{type:'header'|'para', text, status, wpm, accuracy, xp, errorCount}]
+let curIdx     = -1;     // index of the active paragraph
+let pos        = 0;      // char position within the active paragraph
+let errSet     = new Set();
+let startTime  = null;
+let timerTick  = null;
+let totalKeystrokes = 0;
+let corrections     = 0;
+let idleTimer  = null;
+let idleTime   = 0;
+let lastActiveTime = null;
+const IDLE_DELAY = 5000;
+
+let paused     = false;
+let pauseStart = null;
+
+let sessionXP = 0;
+
+let paraEls = [];  // DOM node per paragraph index
+let spanEls = [];  // per-character span refs for the CURRENT paragraph only
 
 // ─── DOM refs ────────────────────────────────────────────────────────────────
-let   spanEls    = [];       // cached span references — avoids O(n) getElementById per keystroke
-const scrollEl   = document.getElementById('text-scroll');
-const windowEl   = document.getElementById('text-window');
-const fillEl     = document.getElementById('progress-fill');
-const wpmEl      = document.getElementById('sv-wpm');
-const accEl      = document.getElementById('sv-acc');
-const timeEl     = document.getElementById('sv-time');
-const kb         = document.getElementById('kb');
+const flowEl   = document.getElementById('text-flow');
+const windowEl = document.getElementById('text-window');
+const fillEl   = document.getElementById('progress-fill');
+const wpmEl    = document.getElementById('sv-wpm');
+const accEl    = document.getElementById('sv-acc');
+const timeEl   = document.getElementById('sv-time');
+const xpEl     = document.getElementById('sv-xp');
+const kb       = document.getElementById('kb');
 
-// ─── Render ──────────────────────────────────────────────────────────────────
-function render() {
-  scrollEl.innerHTML = '';
+// ─── XP scoring ──────────────────────────────────────────────────────────────
+function computeXP(goodChars, accuracy) {
+  return Math.max(1, Math.round((goodChars / 5) * (accuracy / 100)));
+}
+function headerXP(text) {
+  return Math.min(6, Math.max(2, Math.round(text.length / 12)));
+}
+
+// ─── Paragraph model ─────────────────────────────────────────────────────────
+function buildParagraphs(blocks) {
+  return blocks.map(b => ({
+    type: b.type, text: b.text,
+    status: 'pending', wpm: null, accuracy: null, xp: null, errorCount: 0,
+  }));
+}
+
+// Skip/auto-complete header blocks and already-done paragraphs, landing on
+// the next paragraph that actually needs typing.
+function advanceToNextTypable(fromIdx) {
+  let i = fromIdx;
+  while (i < paragraphs.length && paragraphs[i].status !== 'done') {
+    if (paragraphs[i].type === 'header') { completeHeader(i); i++; }
+    else break;
+  }
+  while (i < paragraphs.length && paragraphs[i].status === 'done') i++;
+  return i;
+}
+
+function completeHeader(i) {
+  const p = paragraphs[i];
+  p.status = 'done';
+  p.xp = headerXP(p.text);
+  sessionXP += p.xp;
+  if (paraEls[i]) {
+    const el = buildParaNode(i);
+    paraEls[i].replaceWith(el);
+    paraEls[i] = el;
+  }
+}
+
+// ─── Rendering ───────────────────────────────────────────────────────────────
+function renderAll() {
+  flowEl.innerHTML = '';
+  paraEls = [];
+  const frag = document.createDocumentFragment();
+  paragraphs.forEach((p, i) => {
+    const el = buildParaNode(i);
+    paraEls.push(el);
+    frag.appendChild(el);
+  });
+  flowEl.appendChild(frag);
+  updateProgress();
+}
+
+function buildParaNode(i) {
+  const p = paragraphs[i];
+  if (p.type === 'header') {
+    const el = document.createElement('div');
+    el.className = 'para-header' + (p.status === 'done' ? ' done' : '');
+    el.textContent = p.text;
+    return el;
+  }
+  if (p.status === 'done') return buildDoneNode(i);
+  if (i === curIdx) return buildCurrentNode(i);
+  return buildPendingNode(i);
+}
+
+function buildDoneNode(i) {
+  const p = paragraphs[i];
+  const el = document.createElement('div');
+  el.className = 'para done';
+  const txt = document.createElement('div');
+  txt.className = 'para-text';
+  txt.textContent = p.text;
+  const stats = document.createElement('div');
+  stats.className = 'para-stats';
+  stats.textContent = `⚡ ${p.wpm} wpm  ·  ⊘ ${p.accuracy}% accuracy  ·  🏆 +${p.xp} xp`;
+  el.append(txt, stats);
+  return el;
+}
+
+function buildPendingNode(i) {
+  const el = document.createElement('div');
+  el.className = 'para pending';
+  el.textContent = paragraphs[i].text;
+  return el;
+}
+
+function buildCurrentNode(i) {
+  const p = paragraphs[i];
+  const el = document.createElement('div');
+  el.className = 'para current';
   spanEls = [];
   const frag = document.createDocumentFragment();
-  for (let i = 0; i < chars.length; i++) {
+  for (const ch of Array.from(p.text)) {
     const s = document.createElement('span');
-    s.textContent = chars[i];
+    s.textContent = ch;
+    if (ch === ' ') s.dataset.sp = '1';
     frag.appendChild(s);
     spanEls.push(s);
   }
-  scrollEl.appendChild(frag);
-  fullRepaint();
+  el.appendChild(frag);
+  return el;
 }
 
-// Full repaint — only called on load/restart
-function fullRepaint() {
+function repaintCurrent() {
   for (let i = 0; i < spanEls.length; i++) {
-    spanEls[i].className = i < pos
-      ? (errSet.has(i) ? 'err' : 'ok')
-      : (i === pos ? 'cur' : '');
+    spanEls[i].className = i < pos ? (errSet.has(i) ? 'err' : 'ok') : (i === pos ? 'cur' : '');
   }
-  scrollToLine();
+  scrollCurrentIntoView();
   updateProgress();
 }
 
-// Incremental repaint — O(1), only touches the 2 spans that changed
-function repaint(prev) {
-  if (prev !== undefined && prev >= 0 && prev < spanEls.length) {
-    spanEls[prev].className = prev < pos
-      ? (errSet.has(prev) ? 'err' : 'ok')
-      : '';
+function scrollCurrentIntoView() {
+  const el = paraEls[curIdx];
+  if (!el) return;
+  const curSpan = el.querySelector ? el.querySelector('span.cur') : null;
+  const target = curSpan || el;
+  const wRect = windowEl.getBoundingClientRect();
+  const tRect = target.getBoundingClientRect();
+  const margin = wRect.height * 0.3;
+  if (tRect.top < wRect.top + margin || tRect.bottom > wRect.bottom - margin) {
+    target.scrollIntoView({ block: 'center', behavior: settings.cursorMotion === 'instant' ? 'auto' : 'smooth' });
   }
-  if (pos < spanEls.length) spanEls[pos].className = 'cur';
-  scrollToLine();
-  updateProgress();
-}
-
-function scrollToLine() {
-  if (readMode) return;
-  const curEl = spanEls[pos];
-  if (!curEl) { scrollY = 0; scrollEl.style.transform = 'translateY(0)'; return; }
-  const lh           = window._lineH || LINE_H;
-  const cursorTop    = curEl.offsetTop;
-  const windowH      = windowEl.offsetHeight;
-  const visibleBot   = scrollY + windowH;
-
-  if (cursorTop < scrollY + lh) {
-    scrollY = Math.max(0, cursorTop - lh);
-  } else if (cursorTop + lh * 2 > visibleBot) {
-    scrollY = Math.max(0, cursorTop + lh * 2 - windowH);
-  }
-  scrollEl.style.transform = `translateY(${-scrollY}px)`;
 }
 
 function updateProgress() {
-  const pct = chars.length > 0 ? (pos / chars.length) * 100 : 0;
-  fillEl.style.width = pct + '%';
+  if (!paragraphs.length) { fillEl.style.width = '0%'; return; }
+  const done = paragraphs.filter(p => p.status === 'done').length;
+  fillEl.style.width = (done / paragraphs.length * 100) + '%';
 }
 
-// Skip past newline characters — they render visually but aren't typed
-function skipNewlines() {
-  while (pos < chars.length && chars[pos] === '\n') pos++;
-}
-
-function skipNewlinesBack() {
-  while (pos > 0 && chars[pos] === '\n') pos--;
-}
-
-// Reset idle timer when user is active
+// ─── Idle / active-time accounting ────────────────────────────────────────────
 function resetIdleTimer() {
   clearTimeout(idleTimer);
-  if (startTime && !readMode) {
+  if (startTime && !paused) {
     idleTimer = setTimeout(goIdle, IDLE_DELAY);
     lastActiveTime = Date.now();
   }
 }
-
-// Called when user goes idle
 function goIdle() {
-  if (startTime && !readMode && idleTimer) {
-    idleTime += Date.now() - lastActiveTime;
-    idleTimer = null; // Clear timer to indicate idle state
-    // Visual indicator could be added here
-  }
+  idleTimer = null;
+  document.body.classList.add('idle-paused');
 }
-
-// Resume from idle state
 function resumeFromIdle() {
-  if (startTime && !readMode && !idleTimer) {
-    // We were idle, so reset the active time and start new timer
+  if (startTime && !idleTimer) {
+    idleTime += Date.now() - lastActiveTime;
     lastActiveTime = Date.now();
+    document.body.classList.remove('idle-paused');
     resetIdleTimer();
   }
 }
-
-// Adjust time calculation to exclude idle periods
 function getActiveTime() {
   if (!startTime) return 0;
   const totalElapsed = Date.now() - startTime;
-  
-  // If we're currently idle (no active timer), subtract the idle period
   if (!idleTimer) {
     const currentIdlePeriod = Date.now() - lastActiveTime;
     return Math.max(0, totalElapsed - idleTime - currentIdlePeriod);
   }
-  
-  // If we're actively typing, only subtract accumulated idle time
   return Math.max(0, totalElapsed - idleTime);
 }
 
+// ─── Explicit pause (Esc) ─────────────────────────────────────────────────────
+function enterPause() {
+  if (!startTime || paused) return;
+  paused = true;
+  clearTimeout(idleTimer); idleTimer = null;
+  document.body.classList.remove('idle-paused');
+  pauseStart = Date.now();
+  document.getElementById('pause-overlay').classList.add('show');
+}
+function resumeFromPause() {
+  if (!paused) return;
+  paused = false;
+  idleTime += Date.now() - pauseStart;
+  lastActiveTime = Date.now();
+  document.getElementById('pause-overlay').classList.remove('show');
+  resetIdleTimer();
+  focusInput();
+}
+
 // ─── Live stats ──────────────────────────────────────────────────────────────
+function fmtTime(secs) {
+  return secs < 60 ? Math.round(secs) + 's' : Math.floor(secs / 60) + 'm ' + (Math.round(secs) % 60) + 's';
+}
 function liveStats() {
   if (!startTime) return;
-  const secs   = getActiveTime() / 1000;
-  const mins   = secs / 60;
-  const good   = pos - errSet.size;
-  const wpm    = mins > 0 ? Math.round((good / 5) / mins) : 0;
-  
-  // Calculate accuracy based on total keystrokes (including corrections)
-  // Total attempts = correct characters + errors + corrections
-  const totalAttempts = totalKeystrokes;
-  const acc = totalAttempts > 0 ? Math.round((good / totalAttempts) * 100) : 100;
-  
-  const timeStr = secs < 60
-    ? Math.round(secs) + 's'
-    : Math.floor(secs / 60) + 'm ' + (Math.round(secs) % 60) + 's';
-
+  const secs = getActiveTime() / 1000;
+  const mins = secs / 60;
+  const good = pos - errSet.size;
+  const wpm  = mins > 0 ? Math.round((good / 5) / mins) : 0;
+  const acc  = totalKeystrokes > 0 ? Math.round((good / totalKeystrokes) * 100) : 100;
   wpmEl.textContent = wpm;
   accEl.textContent = acc + '%';
-  timeEl.textContent = timeStr;
+  timeEl.textContent = fmtTime(secs);
+  xpEl.textContent = sessionXP;
   wpmEl.classList.toggle('live', wpm > 0);
   accEl.classList.toggle('live', acc >= 90);
 }
+function resetLiveStats() {
+  [wpmEl, accEl, timeEl].forEach(el => { el.textContent = '—'; el.classList.remove('live'); });
+  xpEl.textContent = sessionXP;
+}
 
-// ─── Keyboard input ──────────────────────────────────────────────────────────
-focusInput();
-window.addEventListener('click', focusInput);
-window.addEventListener('keydown', focusInput);
+// ─── Paragraph lifecycle ──────────────────────────────────────────────────────
+function startParagraph(i) {
+  if (curIdx >= 0 && curIdx < paragraphs.length && paragraphs[curIdx].status !== 'done' && paragraphs[curIdx].type === 'para') {
+    const el = buildParaNode(curIdx); // re-render as plain pending text, discarding in-progress typing
+    paraEls[curIdx].replaceWith(el);
+    paraEls[curIdx] = el;
+  }
 
+  curIdx = i;
+  pos = 0;
+  errSet.clear();
+  startTime = null;
+  totalKeystrokes = 0;
+  corrections = 0;
+  clearInterval(timerTick); timerTick = null;
+  clearTimeout(idleTimer); idleTimer = null; idleTime = 0; lastActiveTime = null;
+  document.body.classList.remove('idle-paused');
+  resetLiveStats();
+
+  if (i >= paragraphs.length) { saveDocState(); showDocComplete(); return; }
+
+  const el = buildParaNode(i);
+  paraEls[i].replaceWith(el);
+  paraEls[i] = el;
+  repaintCurrent();
+  saveDocState();
+  focusInput();
+}
+
+function finishParagraph() {
+  clearInterval(timerTick); timerTick = null;
+  clearTimeout(idleTimer); idleTimer = null;
+
+  const p = paragraphs[curIdx];
+  const secs = getActiveTime() / 1000;
+  const mins = secs / 60;
+  const good = pos - errSet.size;
+  const wpm  = mins > 0 ? Math.round((good / 5) / mins) : 0;
+  const acc  = totalKeystrokes > 0 ? Math.round((good / totalKeystrokes) * 100) : 100;
+  const xp   = computeXP(good, acc);
+
+  p.status = 'done'; p.wpm = wpm; p.accuracy = acc; p.xp = xp; p.errorCount = errSet.size;
+  sessionXP += xp;
+
+  const doneEl = buildDoneNode(curIdx);
+  paraEls[curIdx].replaceWith(doneEl);
+  paraEls[curIdx] = doneEl;
+  saveDocState();
+
+  startParagraph(advanceToNextTypable(curIdx + 1));
+}
+
+function showDocComplete() {
+  const el = document.getElementById('doc-complete');
+  const doneParas = paragraphs.filter(p => p.type === 'para' && p.status === 'done');
+  const avgWpm = doneParas.length ? Math.round(doneParas.reduce((s, p) => s + p.wpm, 0) / doneParas.length) : 0;
+  const avgAcc = doneParas.length ? Math.round(doneParas.reduce((s, p) => s + p.accuracy, 0) / doneParas.length) : 0;
+  el.innerHTML = `<div class="dc-label">— end of document —</div>
+    <div class="dc-stats">avg ${avgWpm} wpm · ${avgAcc}% accuracy · ${sessionXP} xp total</div>`;
+  el.hidden = false;
+  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+function jumpToParagraph(idx) {
+  startParagraph(advanceToNextTypable(Math.max(0, idx)));
+}
+
+// ─── Training-mode backtrack ──────────────────────────────────────────────────
+function backtrack(words) {
+  const text = paragraphs[curIdx].text;
+  const typedSoFar = text.slice(0, pos);
+  const wordStarts = [];
+  const re = /\S+/g;
+  let m;
+  while ((m = re.exec(typedSoFar))) wordStarts.push(m.index);
+  const targetIdx = Math.max(0, wordStarts.length - words);
+  const newPos = wordStarts.length ? wordStarts[targetIdx] : 0;
+  for (let k = newPos; k < pos; k++) errSet.delete(k);
+  pos = newPos;
+}
+
+function autoSkipSymbols(chars) {
+  if (!settings.autoSkipSymbols) return;
+  while (pos < chars.length && /[^\w\s]/.test(chars[pos])) pos++;
+}
+
+// ─── Keyboard input ────────────────────────────────────────────────────────────
 function focusInput() { kb.focus({ preventScroll: true }); }
 
+document.addEventListener('click', (e) => {
+  if (e.target.closest('input, textarea, select, button, a, [contenteditable]')) return;
+  if (isAnyOverlayOpen() || document.getElementById('pause-overlay').classList.contains('show')) return;
+  focusInput();
+});
+
 kb.addEventListener('keydown', (e) => {
-  // Handle paste when no text is loaded (welcome screen)
-  if (!chars.length && (e.ctrlKey || e.metaKey) && e.key === 'v') {
-    e.preventDefault();
-    handlePaste();
+  if (paused) { e.preventDefault(); resumeFromPause(); return; }
+
+  if (!paragraphs.length) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'v') { e.preventDefault(); handlePaste(); }
     return;
   }
-  
-  if (!chars.length) return;
-  if (readMode) return;
-  if (document.getElementById('result').classList.contains('show')) return;
+
+  if (isAnyOverlayOpen()) {
+    if (e.key === 'Escape') { e.preventDefault(); closeAllOverlays(); }
+    return;
+  }
+
+  if (curIdx < 0 || curIdx >= paragraphs.length) return; // document complete
   if (e.ctrlKey || e.metaKey) return;
 
-  if (e.key === 'Escape') { e.preventDefault(); return; }
+  if (e.key === 'Escape') { e.preventDefault(); enterPause(); return; }
 
   if (e.key === 'Backspace') {
     e.preventDefault();
-    const prev = pos;
-    if (pos > 0) { 
-      pos--; 
-      // Track correction
-      corrections++;
-      totalKeystrokes++;
-      // Remove error if we're backspacing over an error position
-      if (errSet.has(pos)) {
-        errSet.delete(pos);
-      }
-      skipNewlinesBack(); 
+    if (pos > 0) {
+      pos--; corrections++; totalKeystrokes++;
+      errSet.delete(pos);
+      playClick();
+      repaintCurrent();
+      resetIdleTimer();
     }
-    repaint(prev);
-    resetIdleTimer(); // Reset idle timer on backspace
     return;
   }
 
   if (e.key.length !== 1) return; // ignore F-keys, arrows, etc.
   e.preventDefault();
-  
-  // Track keystroke
+
+  const chars = Array.from(paragraphs[curIdx].text);
   totalKeystrokes++;
 
   if (!startTime) {
@@ -841,318 +1027,474 @@ kb.addEventListener('keydown', (e) => {
     timerTick = setInterval(liveStats, 500);
     resetIdleTimer();
   }
+  resumeFromIdle();
+  resetIdleTimer();
 
-  resumeFromIdle(); // Resume from idle when typing again
-  resetIdleTimer(); // Reset idle timer on each keystroke
+  const expected = chars[pos];
+  const match = settings.ignoreCaps
+    ? e.key.toLowerCase() === expected.toLowerCase()
+    : e.key === expected;
 
-  const prev = pos;
-  if (e.key !== chars[pos]) errSet.add(pos);
-  pos++;
-  skipNewlines();
-  repaint(prev);
+  if (!match) {
+    errSet.add(pos);
+    playErrorSound();
+    if (settings.stopOnError) { repaintCurrent(); return; }
+    pos++;
+    if (settings.trainingMode) backtrack(settings.backtrackWords);
+  } else {
+    pos++;
+    playClick();
+  }
+  autoSkipSymbols(chars);
+  repaintCurrent();
 
-  if (pos >= chars.length) finishSession();
+  if (pos >= chars.length) finishParagraph();
 });
 
-// ─── Font size control ────────────────────────────────────────────────────────
-const FONT_SIZES = [13, 15, 17, 19, 22, 26]; // px steps
-const FONT_LINE_RATIO = 1.85; // line-height multiplier
-let fontSizeIdx = parseInt(localStorage.getItem('zentype-font-idx') ?? '2', 10);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isAnyOverlayOpen()) { e.preventDefault(); closeAllOverlays(); }
+});
+
+document.getElementById('pause-overlay').addEventListener('click', resumeFromPause);
+
+// ─── Font size control ─────────────────────────────────────────────────────────
+const FONT_SIZES = [13, 15, 17, 19, 22, 26];
+const FONT_LINE_RATIO = 1.85;
 
 function applyFontSize() {
-  const sz = FONT_SIZES[fontSizeIdx];
+  const sz = FONT_SIZES[settings.fontSizeIdx];
   const lh = Math.round(sz * FONT_LINE_RATIO);
   document.documentElement.style.setProperty('--font-sz', sz + 'px');
   document.documentElement.style.setProperty('--line-h', lh + 'px');
   document.getElementById('font-size-val').textContent = sz + 'px';
-  // Keep the JS LINE_H constant in sync so scrollToLine() works correctly
-  window._lineH = lh;
 }
-
 function changeFontSize(dir) {
-  const next = fontSizeIdx + dir;
+  const next = settings.fontSizeIdx + dir;
   if (next < 0 || next >= FONT_SIZES.length) return;
-  fontSizeIdx = next;
-  localStorage.setItem('zentype-font-idx', fontSizeIdx);
+  settings.fontSizeIdx = next;
+  saveSettings();
   applyFontSize();
-  if (chars.length) { scrollY = 0; scrollEl.style.transform = 'translateY(0)'; scrollToLine(); }
 }
-
-// Apply saved preference on load
 applyFontSize();
 
-// Show font controls when typing area is visible
 function showFontCtrl(show) {
   document.getElementById('font-size-ctrl').classList.toggle('show', show);
 }
+function showToolbar(show) {
+  document.getElementById('toolbar').classList.toggle('show', show);
+}
 
-// ─── Pagination ──────────────────────────────────────────────────────────────
-const PAGE_SIZE = 1800; // target chars per page (~15-20 visible lines)
+// ─── Text pipeline (browser fallback — mirrors main.py's strip_markdown_blocks) ─
+function clientStripBlocks(text) {
+  text = text.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, '');
+  text = text.replace(/```[\w]*\n([\s\S]*?)```/g, '$1');
 
-function splitPages(text) {
-  const paras = text.split(/\n\n+/).filter(p => p.trim().length > 0);
-  const out = [];
-  let cur = '';
-  for (const p of paras) {
-    const next = cur ? cur + '\n\n' + p : p;
-    if (next.length > PAGE_SIZE && cur) { out.push(cur); cur = p; }
-    else cur = next;
+  const cleanInline = (s) => {
+    s = s.replace(/!\[\[.*?\]\]/g, '');
+    s = s.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, a, b) => b || a);
+    s = s.replace(/!\[.*?\]\(.*?\)/g, '');
+    s = s.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+    s = s.replace(/\*{1,3}([^*\n]+)\*{1,3}/g, '$1');
+    s = s.replace(/_{1,3}([^_\n]+)_{1,3}/g, '$1');
+    s = s.replace(/~~([^~]+)~~/g, '$1');
+    s = s.replace(/`([^`]+)`/g, '$1');
+    s = s.replace(/(?<!\w)#[\w/]+/g, '');
+    s = s.replace(/<[^>]+>/g, '');
+    s = s.replace(/[ \t]+/g, ' ');
+    return s.trim();
+  };
+
+  const headerRe = /^#{1,6}\s+(.*)$/;
+  const looksLikeHeading = (line) => {
+    line = line.trim();
+    if (!line || line.length > 80) return false;
+    if (!/[a-zA-Z]/.test(line)) return false;
+    if (line.split(/\s+/).length > 12) return false;
+    if (/[.,;]$/.test(line) && !/^chapter\b/i.test(line)) return false;
+    return true;
+  };
+
+  const rawBlocks = [];
+  let cur = [];
+  for (const raw of text.split('\n')) {
+    let line = raw.trim();
+    line = line.replace(/^>\s*\[!\w+\][-+]?\s*/, '');
+    line = line.replace(/^>\s*/, '');
+    line = line.replace(/^[-*_]{3,}$/, '');
+    if (line === '') { if (cur.length) { rawBlocks.push(cur); cur = []; } continue; }
+    line = line.replace(/^[ \t]*[-*+]\s+/, '');
+    line = line.replace(/^[ \t]*\d+[.)]\s+/, '');
+    cur.push(line);
   }
-  if (cur) out.push(cur);
-  return out.length ? out : [text];
+  if (cur.length) rawBlocks.push(cur);
+
+  const blocks = [];
+  for (const blockLines of rawBlocks) {
+    const first = blockLines[0];
+    const m = headerRe.exec(first);
+    let rest;
+    if (m) {
+      const txt = cleanInline(m[1]);
+      if (txt) blocks.push({ type: 'header', text: txt });
+      rest = blockLines.slice(1);
+    } else if (looksLikeHeading(first)) {
+      const txt = cleanInline(first);
+      if (txt) blocks.push({ type: 'header', text: txt });
+      rest = blockLines.slice(1);
+    } else {
+      rest = blockLines;
+    }
+    if (rest.length) {
+      const joined = rest.map(l => l.replace(headerRe, '$1')).join(' ');
+      const txt = cleanInline(joined);
+      if (txt) blocks.push({ type: 'para', text: txt });
+    }
+  }
+  return blocks;
 }
+function blocksLength(blocks) { return blocks.reduce((n, b) => n + b.text.length, 0); }
 
-function updatePageNav() {
-  const multi = pages.length > 1;
-  document.getElementById('btn-prev').hidden      = !multi || pageIdx === 0;
-  document.getElementById('btn-next-page').hidden = !multi || pageIdx === pages.length - 1;
-  const ind = document.getElementById('page-ind');
-  ind.hidden = !multi;
-  if (multi) ind.textContent = `${pageIdx + 1} / ${pages.length}`;
-}
+// ─── Load document ─────────────────────────────────────────────────────────────
+function loadDoc(blocks, name) {
+  doc = { name, hash: hashText(blocks.map(b => b.text).join('\n')) };
+  paragraphs = buildParagraphs(blocks);
+  sessionXP = 0;
 
-function loadPage(idx) {
-  pageIdx = idx;
-  loadText(pages[idx], fileName);
-}
+  const saved = loadDocState(doc.hash);
+  if (saved && Array.isArray(saved.paras) && saved.paras.length === paragraphs.length) {
+    saved.paras.forEach((s, i) => Object.assign(paragraphs[i], s));
+    sessionXP = paragraphs.reduce((sum, p) => sum + (p.status === 'done' ? (p.xp || 0) : 0), 0);
+  }
 
-function prevPage() { if (pageIdx > 0) loadPage(pageIdx - 1); }
-function nextPage() { if (pageIdx < pages.length - 1) loadPage(pageIdx + 1); }
-
-// ─── Load text ───────────────────────────────────────────────────────────────
-function loadText(text, name) {
-  fileText = text;
-  fileName = name;
-  chars    = Array.from(text);
-  pos      = 0;
-  errSet.clear();
-  startTime = null;
-  clearInterval(timerTick);
-  timerTick = null;
-  clearTimeout(idleTimer);
-  idleTimer = null;
-  idleTime = 0;
-  lastActiveTime = null;
-  totalKeystrokes = 0;
-  corrections = 0;
-
-  // Reset stats display
-  [wpmEl, accEl, timeEl].forEach(el => {
-    el.textContent = '—';
-    el.classList.remove('live');
-  });
-
-  // File label: name + page if multi-page
-  const label = pages.length > 1 ? `${name}  ·  ${pageIdx + 1} / ${pages.length}` : name;
-
-  // Exit reading mode if active
-  if (readMode) toggleReadMode();
-
-  // Show typing area
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('typing-area').style.display = 'flex';
-  document.getElementById('result').classList.remove('show');
-  document.getElementById('btn-restart').hidden = false;
-  document.getElementById('btn-read').hidden = false;
+  document.getElementById('doc-complete').hidden = true;
   showFontCtrl(true);
-  document.getElementById('btn-next-file').hidden = fileList.length <= 1;
-  document.getElementById('res-next-file').hidden = fileList.length <= 1;
-  document.getElementById('file-label').textContent = label;
-  updatePageNav();
+  showToolbar(true);
+  document.getElementById('file-label').textContent = name;
 
-  skipNewlines();
-  scrollY = 0;
-  scrollEl.style.transform = 'translateY(0)';
-  render();
-  focusInput();
+  curIdx = -1;
+  renderAll();
+  startParagraph(advanceToNextTypable(0));
 }
 
-// ─── Session lifecycle ────────────────────────────────────────────────────────
 function restart() {
-  if (!fileText) return;
-  document.getElementById('result').classList.remove('show');
-  loadPage(pageIdx);
+  if (!doc) return;
+  localStorage.removeItem(docKey(doc.hash));
+  const blocks = paragraphs.map(p => ({ type: p.type, text: p.text }));
+  loadDoc(blocks, doc.name);
 }
 
 function goHome() {
-  document.getElementById('result').classList.remove('show');
   document.getElementById('typing-area').style.display = 'none';
   document.getElementById('welcome').style.display = 'flex';
-  document.getElementById('btn-restart').hidden = true;
-  document.getElementById('btn-prev').hidden = true;
-  document.getElementById('btn-next-page').hidden = true;
-  document.getElementById('page-ind').hidden = true;
-  document.getElementById('btn-next-file').hidden = true;
-  document.getElementById('btn-read').hidden = true;
+  document.getElementById('doc-complete').hidden = true;
   showFontCtrl(false);
-  if (readMode) toggleReadMode();
-  fileText = ''; chars = []; pages = []; pageIdx = 0;
-  clearInterval(timerTick);
+  showToolbar(false);
+  document.body.classList.remove('zen-mode');
+  closeDrawer();
+  clearInterval(timerTick); timerTick = null;
+  clearTimeout(idleTimer); idleTimer = null;
+  doc = null; paragraphs = []; curIdx = -1; paraEls = []; spanEls = [];
 }
 
-function finishSession() {
-  clearInterval(timerTick);
-  clearTimeout(idleTimer);
-  const secs = getActiveTime() / 1000;
-  const mins = secs / 60;
-  const good = pos - errSet.size;
-  const wpm  = mins > 0 ? Math.round((good / 5) / mins) : 0;
-  
-  // Calculate accuracy based on total keystrokes (including corrections)
-  const totalAttempts = totalKeystrokes;
-  const acc = totalAttempts > 0 ? Math.round((good / totalAttempts) * 100) : 100;
-  
-  const timeStr = secs < 60
-    ? Math.round(secs) + 's'
-    : Math.floor(secs / 60) + 'm ' + (Math.round(secs) % 60) + 's';
-
-  document.getElementById('rn-wpm').textContent  = wpm;
-  document.getElementById('rn-acc').textContent  = acc + '%';
-  document.getElementById('rn-time').textContent = timeStr;
-  document.getElementById('res-next-page').hidden = pageIdx >= pages.length - 1;
-  document.getElementById('result').classList.add('show');
-
-  wpmEl.textContent = wpm;
-  accEl.textContent = acc + '%';
-  timeEl.textContent = timeStr;
+// ─── Section navigation & TOC ───────────────────────────────────────────────────
+function headerIndices() {
+  const out = [];
+  paragraphs.forEach((p, i) => { if (p.type === 'header') out.push(i); });
+  return out;
 }
-
-// ─── File picker modal ────────────────────────────────────────────────────────
-function showFilePicker() {
-  if (!fileList.length) return;
-  const items = document.getElementById('file-list-items');
-  items.innerHTML = '';
-  document.getElementById('file-list-count').textContent =
-    `${fileList.length} file${fileList.length > 1 ? 's' : ''}`;
-
-  fileList.forEach((f, i) => {
-    const div = document.createElement('div');
-    div.className = 'file-item';
-    div.innerHTML = `<span>${f.name}</span><span class="char-count">${f.text.length} chars</span>`;
-    div.onclick = () => {
-      fileIdx = i;
-      pages = splitPages(f.text);
-      pageIdx = 0;
-      closeFilePicker();
-      loadPage(0);
-    };
-    items.appendChild(div);
-  });
-
-  document.getElementById('file-picker').classList.add('show');
-}
-
-function closeFilePicker() {
-  document.getElementById('file-picker').classList.remove('show');
-  focusInput();
-}
-
-// ─── Section picker modal ─────────────────────────────────────────────────────
-function showSectionPicker() {
-  if (!sectionList.length) return;
-  const items = document.getElementById('section-list-items');
-  items.innerHTML = '';
-  document.getElementById('section-list-count').textContent =
-    `${sectionList.length} section${sectionList.length > 1 ? 's' : ''}`;
-
-  sectionList.forEach((s, i) => {
-    const div = document.createElement('div');
-    div.className = 'section-item' + (i === sectionIdx ? ' active' : '');
-    div.innerHTML = `<span>${s.title}</span><span class="char-count">${s.text.length} chars</span>`;
-    div.onclick = () => { sectionIdx = i; closeSectionPicker(); loadSection(i); };
-    items.appendChild(div);
-  });
-
-  document.getElementById('section-picker').classList.add('show');
-}
-
-function closeSectionPicker() {
-  document.getElementById('section-picker').classList.remove('show');
-  focusInput();
-}
-
-function loadSection(idx) {
-  const s = sectionList[idx];
-  if (!s) return;
-  sectionIdx = idx;
-  const label = parentName ? `${parentName}  ·  ${s.title}` : s.title;
-  loadText(s.text, s.title, label);
-}
-
-// ─── File loading (pywebview API) ─────────────────────────────────────────────
-async function handleOpenFile() {
-  try {
-    const api = window.pywebview?.api;
-    if (api) {
-      const files = await api.open_file();
-      if (files?.length) {
-        fileList = files;
-        fileIdx = 0;
-        if (files.length === 1) {
-          pages = splitPages(files[0].text); pageIdx = 0; loadPage(0);
-        } else {
-          pages = []; pageIdx = 0; showFilePicker();
-        }
-      }
-    } else {
-      // Fallback: browser file input
-      browserPickFile();
-    }
-  } catch (e) {
-    console.error('open_file:', e);
-    browserPickFile();
+function gotoAdjacentSection(dir) {
+  const headers = headerIndices();
+  if (!headers.length) return;
+  if (dir > 0) {
+    const target = headers.find(i => i > curIdx);
+    if (target !== undefined) jumpToParagraph(target + 1);
+  } else {
+    const currentSectionStart = headers.filter(i => i <= curIdx).pop();
+    const before = headers.filter(i => i < (currentSectionStart ?? curIdx)).pop();
+    jumpToParagraph((before !== undefined ? before : headers[0]) + 1);
   }
 }
-
-async function handleOpenFolder() {
-  try {
-    const api = window.pywebview?.api;
-    if (api) {
-      const files = await api.open_folder();
-      if (files?.length) {
-        fileList = files;
-        fileIdx = 0;
-        if (files.length === 1) {
-          pages = splitPages(files[0].text); pageIdx = 0; loadPage(0);
-        } else {
-          pages = []; pageIdx = 0; showFilePicker();
-        }
-      }
-    } else {
-      alert('Folder selection requires the desktop app (pywebview). Use "open file" to drag individual files.');
-    }
-  } catch (e) {
-    console.error('open_folder:', e);
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function buildTOC() {
+  const wrap = document.createElement('div');
+  const headers = headerIndices();
+  if (!headers.length) {
+    wrap.innerHTML = '<div class="drawer-empty">No sections detected in this document.</div>';
+    return wrap;
   }
+  headers.forEach((i, idx) => {
+    const nextHeaderIdx = idx + 1 < headers.length ? headers[idx + 1] : paragraphs.length;
+    const bodyParas = paragraphs.slice(i, nextHeaderIdx).filter(p => p.type === 'para');
+    const doneCount = bodyParas.filter(p => p.status === 'done').length;
+    let status = 'not-started';
+    if (bodyParas.length && doneCount === bodyParas.length) status = 'done';
+    else if (i <= curIdx && curIdx < nextHeaderIdx) status = 'current';
+    else if (doneCount > 0) status = 'partial';
+    const row = document.createElement('div');
+    row.className = 'toc-item ' + status;
+    row.innerHTML = `<span class="toc-dot"></span><span>${escapeHtml(paragraphs[i].text)}</span>`;
+    row.onclick = () => { jumpToParagraph(i + 1); closeDrawer(); };
+    wrap.appendChild(row);
+  });
+  return wrap;
 }
 
-// Browser fallback file picker (when running without pywebview)
-function browserPickFile() {
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = '.md,.txt';
-  inp.multiple = true;
-  inp.onchange = async () => {
-    const results = [];
-    for (const f of inp.files) {
-      const raw  = await f.text();
-      const name = f.name.replace(/\.(md|txt)$/i, '');
-      results.push({ name, text: clientStrip(raw) });
-    }
-    fileList = results.filter(f => f.text.length >= 50);
-    if (fileList.length === 1) {
-      pages = splitPages(fileList[0].text);
-      pageIdx = 0;
-      loadPage(0);
-    } else if (fileList.length > 1) {
-      pages = []; pageIdx = 0;
-      showFilePicker();
-    }
+// ─── Quick settings ─────────────────────────────────────────────────────────────
+function buildQuickSettings() {
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="qs-row">
+      <label>Font Size</label>
+      <div class="qs-font-ctrl">
+        <button class="btn-font" id="qs-font-minus">A−</button>
+        <span id="qs-font-val"></span>
+        <button class="btn-font" id="qs-font-plus">A+</button>
+      </div>
+    </div>
+    <div class="qs-row">
+      <label>Cursor Motion</label>
+      <select id="qs-cursor-motion">
+        <option value="smooth">Smooth</option>
+        <option value="instant">Instant</option>
+      </select>
+    </div>
+    <div class="qs-divider"></div>
+    <label class="qs-toggle"><input type="checkbox" id="qs-audio"> Enable Audio</label>
+    <div id="qs-audio-rows" style="display:flex; flex-direction:column; gap:10px;">
+      <div class="qs-row">
+        <label>Typing Sound</label>
+        <div class="qs-font-ctrl">
+          <input type="range" id="qs-click-vol" min="0" max="1" step="0.01">
+          <button class="tb-btn" id="qs-click-test" title="preview" style="width:26px;height:26px;font-size:11px;">▶</button>
+        </div>
+      </div>
+      <div class="qs-row">
+        <label>Error Sound</label>
+        <div class="qs-font-ctrl">
+          <input type="range" id="qs-error-vol" min="0" max="1" step="0.01">
+          <button class="tb-btn" id="qs-error-test" title="preview" style="width:26px;height:26px;font-size:11px;">▶</button>
+        </div>
+      </div>
+    </div>
+    <div class="qs-divider"></div>
+    <label class="qs-toggle"><input type="checkbox" id="qs-training"> Enable Training Mode</label>
+    <div class="qs-row" id="qs-backtrack-row">
+      <label>Backtrack on error</label>
+      <select id="qs-backtrack">
+        <option value="1">1 word</option>
+        <option value="3">3 words</option>
+        <option value="5">5 words</option>
+      </select>
+    </div>
+    <label class="qs-toggle"><input type="checkbox" id="qs-ignore-caps"> Ignore Capitalization</label>
+    <label class="qs-toggle"><input type="checkbox" id="qs-stop-error"> Stop on Error</label>
+    <label class="qs-toggle"><input type="checkbox" id="qs-auto-skip"> Auto Skip Symbols</label>
+  `;
+  const $ = (sel) => wrap.querySelector(sel);
+
+  $('#qs-font-val').textContent = FONT_SIZES[settings.fontSizeIdx] + 'px';
+  $('#qs-font-minus').onclick = () => { changeFontSize(-1); $('#qs-font-val').textContent = FONT_SIZES[settings.fontSizeIdx] + 'px'; };
+  $('#qs-font-plus').onclick  = () => { changeFontSize(1);  $('#qs-font-val').textContent = FONT_SIZES[settings.fontSizeIdx] + 'px'; };
+
+  $('#qs-cursor-motion').value = settings.cursorMotion;
+  $('#qs-cursor-motion').onchange = (e) => { settings.cursorMotion = e.target.value; saveSettings(); };
+
+  const audioRows = $('#qs-audio-rows');
+  audioRows.style.display = settings.audioEnabled ? 'flex' : 'none';
+  $('#qs-audio').checked = settings.audioEnabled;
+  $('#qs-audio').onchange = (e) => {
+    settings.audioEnabled = e.target.checked;
+    audioRows.style.display = settings.audioEnabled ? 'flex' : 'none';
+    saveSettings();
   };
-  inp.click();
+  $('#qs-click-vol').value = settings.clickVolume;
+  $('#qs-click-vol').oninput = (e) => { settings.clickVolume = parseFloat(e.target.value); saveSettings(); };
+  $('#qs-click-test').onclick = () => { const was = settings.audioEnabled; settings.audioEnabled = true; playClick(); settings.audioEnabled = was; };
+  $('#qs-error-vol').value = settings.errorVolume;
+  $('#qs-error-vol').oninput = (e) => { settings.errorVolume = parseFloat(e.target.value); saveSettings(); };
+  $('#qs-error-test').onclick = () => { const was = settings.audioEnabled; settings.audioEnabled = true; playErrorSound(); settings.audioEnabled = was; };
+
+  const backtrackRow = $('#qs-backtrack-row');
+  backtrackRow.style.display = settings.trainingMode ? 'flex' : 'none';
+  $('#qs-training').checked = settings.trainingMode;
+  $('#qs-training').onchange = (e) => {
+    settings.trainingMode = e.target.checked;
+    if (settings.trainingMode) { settings.stopOnError = false; $('#qs-stop-error').checked = false; }
+    backtrackRow.style.display = settings.trainingMode ? 'flex' : 'none';
+    saveSettings();
+  };
+  $('#qs-backtrack').value = String(settings.backtrackWords);
+  $('#qs-backtrack').onchange = (e) => { settings.backtrackWords = parseInt(e.target.value, 10); saveSettings(); };
+
+  $('#qs-ignore-caps').checked = settings.ignoreCaps;
+  $('#qs-ignore-caps').onchange = (e) => { settings.ignoreCaps = e.target.checked; saveSettings(); };
+
+  $('#qs-stop-error').checked = settings.stopOnError;
+  $('#qs-stop-error').onchange = (e) => {
+    settings.stopOnError = e.target.checked;
+    if (settings.stopOnError) {
+      settings.trainingMode = false;
+      $('#qs-training').checked = false;
+      backtrackRow.style.display = 'none';
+    }
+    saveSettings();
+  };
+
+  $('#qs-auto-skip').checked = settings.autoSkipSymbols;
+  $('#qs-auto-skip').onchange = (e) => { settings.autoSkipSymbols = e.target.checked; saveSettings(); };
+
+  return wrap;
 }
 
-// ─── Drag & drop ─────────────────────────────────────────────────────────────
+// ─── Typing / error sounds (synthesized — no bundled audio assets) ────────────
+// A soft two-layer "thock": a low body tone with a quick pitch-drop (the
+// switch bottoming out) plus a brief, quiet high transient for tap
+// definition. Every gain ramps in from near-zero first to avoid the
+// digital pop a hard-edged onset would otherwise leave in the waveform.
+function playClick() {
+  if (!settings.audioEnabled) return;
+  ensureAudioCtx();
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const out = ctx.createGain();
+  out.gain.value = settings.clickVolume;
+  out.connect(ctx.destination);
+
+  const body = ctx.createOscillator();
+  body.type = 'sine';
+  body.frequency.setValueAtTime(340, now);
+  body.frequency.exponentialRampToValueAtTime(170, now + 0.05);
+  const bodyGain = ctx.createGain();
+  bodyGain.gain.setValueAtTime(0.0001, now);
+  bodyGain.gain.exponentialRampToValueAtTime(0.85, now + 0.003);
+  bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+  body.connect(bodyGain).connect(out);
+  body.start(now);
+  body.stop(now + 0.06);
+
+  const tap = ctx.createOscillator();
+  tap.type = 'triangle';
+  tap.frequency.value = 1400;
+  const tapGain = ctx.createGain();
+  tapGain.gain.setValueAtTime(0.0001, now);
+  tapGain.gain.exponentialRampToValueAtTime(0.25, now + 0.001);
+  tapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.014);
+  tap.connect(tapGain).connect(out);
+  tap.start(now);
+  tap.stop(now + 0.016);
+}
+function playErrorSound() {
+  if (!settings.audioEnabled) return;
+  ensureAudioCtx();
+  const ctx = audioCtx;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(220, now);
+  osc.frequency.exponentialRampToValueAtTime(150, now + 0.11);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(settings.errorVolume * 0.45, now + 0.004);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.13);
+}
+
+// ─── Focus sounds (synthesized ambient rain — no bundled audio asset) ──────────
+let audioCtx = null, noiseSource = null, noiseGain = null, rainPlaying = false;
+let focusUIRefs = null;
+
+function ensureAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+function createNoiseBuffer(ctx) {
+  const size = ctx.sampleRate * 2;
+  const buffer = ctx.createBuffer(1, size, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+  return buffer;
+}
+function startRain() {
+  ensureAudioCtx();
+  const src = audioCtx.createBufferSource();
+  src.buffer = createNoiseBuffer(audioCtx);
+  src.loop = true;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 900;
+  const gain = audioCtx.createGain();
+  gain.gain.value = settings.focusVolume;
+  src.connect(filter).connect(gain).connect(audioCtx.destination);
+  src.start();
+  noiseSource = src; noiseGain = gain;
+  rainPlaying = true;
+}
+function stopRain() {
+  if (noiseSource) { try { noiseSource.stop(); } catch (e) {} noiseSource.disconnect(); noiseSource = null; }
+  rainPlaying = false;
+}
+function toggleRain() { rainPlaying ? stopRain() : startRain(); updateFocusUI(); }
+function setFocusVolume(v) { settings.focusVolume = v; saveSettings(); if (noiseGain) noiseGain.gain.value = v; }
+function updateFocusUI() {
+  if (!focusUIRefs) return;
+  focusUIRefs.playBtn.textContent = rainPlaying ? '❚❚' : '▶';
+  focusUIRefs.playBtn.classList.toggle('active', rainPlaying);
+}
+function buildFocusSounds() {
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="focus-track">
+      <div class="focus-track-name">Rain<br><span class="focus-track-sub">soft indoor rain with distant thunder</span></div>
+      <button class="tb-btn" id="focus-play">▶</button>
+    </div>
+    <div class="qs-row">
+      <label>Volume</label>
+      <input type="range" id="focus-volume" min="0" max="1" step="0.01">
+    </div>
+  `;
+  const $ = (sel) => wrap.querySelector(sel);
+  focusUIRefs = { playBtn: $('#focus-play') };
+  $('#focus-play').onclick = toggleRain;
+  $('#focus-volume').value = settings.focusVolume;
+  $('#focus-volume').oninput = (e) => setFocusVolume(parseFloat(e.target.value));
+  updateFocusUI();
+  return wrap;
+}
+
+// ─── Zen mode ────────────────────────────────────────────────────────────────
+function toggleZen() {
+  const on = document.body.classList.toggle('zen-mode');
+  document.getElementById('tb-zen').classList.toggle('active', on);
+}
+
+// ─── Side drawer plumbing ──────────────────────────────────────────────────────
+function isAnyOverlayOpen() {
+  return document.getElementById('side-drawer').classList.contains('open');
+}
+function closeAllOverlays() { closeDrawer(); }
+
+function openDrawer(kind) {
+  const drawer = document.getElementById('side-drawer');
+  const title = document.getElementById('drawer-title');
+  const body = document.getElementById('drawer-body');
+  body.innerHTML = '';
+  const builders = { toc: ['Contents', buildTOC], settings: ['Quick Settings', buildQuickSettings], focus: ['Focus Sounds', buildFocusSounds] };
+  const [label, build] = builders[kind];
+  title.textContent = label;
+  body.appendChild(build());
+  drawer.classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('side-drawer').classList.remove('open');
+  focusInput();
+}
+
+// ─── Drag & drop (single file — drop the first valid one) ─────────────────────
 let dragCount = 0;
 const overlay = document.getElementById('drag-overlay');
 
@@ -1164,134 +1506,48 @@ document.addEventListener('drop', async (e) => {
   e.preventDefault();
   dragCount = 0;
   overlay.classList.remove('show');
-  const dropped = [];
-  
-  // Handle text content dragged directly
-  const textData = e.dataTransfer.getData('text/plain');
-  if (textData && textData.trim().length >= 50) {
-    const clean = clientStrip(textData);
-    if (clean.length >= 50) {
-      dropped.push({ name: 'pasted text', text: clean });
-    }
-  }
-  
-  // Handle files
+
   for (const f of e.dataTransfer.files) {
     if (/\.(md|txt)$/i.test(f.name)) {
-      const raw   = await f.text();
-      const clean = clientStrip(raw);
-      if (clean.length >= 50)
-        dropped.push({ name: f.name.replace(/\.(md|txt)$/i, ''), text: clean });
+      const raw = await f.text();
+      const blocks = clientStripBlocks(raw);
+      if (blocksLength(blocks) >= 50) {
+        loadDoc(blocks, f.name.replace(/\.(md|txt)$/i, ''));
+        return;
+      }
     }
   }
-  
-  if (!dropped.length) return;
-  fileList = dropped;
-  fileIdx  = 0;
-  if (dropped.length === 1) {
-    pages = splitPages(dropped[0].text);
-    pageIdx = 0;
-    loadPage(0);
-  } else {
-    pages = []; pageIdx = 0;
-    showFilePicker();
+
+  const textData = e.dataTransfer.getData('text/plain');
+  if (textData && textData.trim().length >= 50) {
+    const blocks = clientStripBlocks(textData);
+    if (blocksLength(blocks) >= 50) loadDoc(blocks, 'pasted text');
   }
 });
 
-// ─── Paste functionality ───────────────────────────────────────────────────────────
+// ─── Paste ─────────────────────────────────────────────────────────────────────
 async function handlePaste() {
+  let text = '';
   try {
-    const text = await navigator.clipboard.readText();
-    if (text && text.trim().length >= 50) {
-      const clean = clientStrip(text);
-      if (clean.length >= 50) {
-        fileList = [{ name: 'pasted text', text: clean }];
-        fileIdx = 0;
-        pages = splitPages(clean);
-        pageIdx = 0;
-        loadPage(0);
-      }
-    }
+    text = await navigator.clipboard.readText();
   } catch (err) {
-    // Fallback for browsers that don't support clipboard API
-    // Use a temporary textarea to paste
     const tempArea = document.createElement('textarea');
     tempArea.style.position = 'fixed';
     tempArea.style.opacity = '0';
-    tempArea.value = '';
     document.body.appendChild(tempArea);
     tempArea.focus();
-    tempArea.select();
-    
-    // Execute paste command
     document.execCommand('paste');
-    
-    const pastedText = tempArea.value;
+    text = tempArea.value;
     document.body.removeChild(tempArea);
-    
-    if (pastedText && pastedText.trim().length >= 50) {
-      const clean = clientStrip(pastedText);
-      if (clean.length >= 50) {
-        fileList = [{ name: 'pasted text', text: clean }];
-        fileIdx = 0;
-        pages = splitPages(clean);
-        pageIdx = 0;
-        loadPage(0);
-      }
-    }
   }
+  if (!text || text.trim().length < 50) return;
+  const blocks = clientStripBlocks(text);
+  if (blocksLength(blocks) < 50) return;
+  loadDoc(blocks, 'pasted text');
 }
 
-// ─── Client-side markdown strip (fallback when no Python) ─────────────────────
-function clientStrip(txt) {
-  txt = txt.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, '');
-  txt = txt.replace(/!\[\[.*?\]\]/g, '');
-  txt = txt.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, a, b) => b || a);
-  txt = txt.replace(/!\[.*?\]\(.*?\)/g, '');
-  txt = txt.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-  txt = txt.replace(/^#{1,6}\s+/gm, '');
-  txt = txt.replace(/\*{1,3}([^*\n]+)\*{1,3}/g, '$1');
-  txt = txt.replace(/_{1,3}([^_\n]+)_{1,3}/g, '$1');
-  txt = txt.replace(/~~([^~]+)~~/g, '$1');
-  txt = txt.replace(/```[\w]*\n([\s\S]*?)```/g, '$1');
-  txt = txt.replace(/`([^`]+)`/g, '$1');
-  txt = txt.replace(/^>\s*\[!\w+\][-+]?\s*/gm, '');
-  txt = txt.replace(/^>\s*/gm, '');
-  txt = txt.replace(/^[-*+]\s+/gm, '');
-  txt = txt.replace(/^\d+[.)]\s+/gm, '');
-  txt = txt.replace(/(?<!\w)#[\w/]+/g, '');
-  txt = txt.replace(/<[^>]+>/g, '');
-  txt = txt.replace(/[ \t]+/g, ' ');       // collapse spaces/tabs within a line
-  txt = txt.replace(/^ | $/gm, '');        // trim leading/trailing space per line
-  txt = txt.replace(/\n{3,}/g, '\n\n');    // max one blank line between paragraphs
-  return txt.trim();
-}
-
-// ─── Reading mode ─────────────────────────────────────────────────────────────
-function toggleReadMode() {
-  readMode = !readMode;
-  document.body.classList.toggle('reading-mode', readMode);
-  const btn = document.getElementById('btn-read');
-  btn.classList.toggle('active', readMode);
-  btn.textContent = readMode ? 'type' : 'read';
-  if (readMode) {
-    scrollEl.style.transform = 'translateY(0)';
-    windowEl.removeAttribute('onclick');
-  } else {
-    windowEl.setAttribute('onclick', 'focusInput()');
-    scrollToLine();
-    focusInput();
-  }
-}
-
-// Close file picker on escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeFilePicker();
-    document.getElementById('result').classList.remove('show');
-  }
-});
+// ─── Boot ──────────────────────────────────────────────────────────────────────
+focusInput();
 </script>
 </body>
 </html>
-
